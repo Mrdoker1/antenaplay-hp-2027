@@ -30,6 +30,10 @@ export type BadgeKind = 'live' | 'new' | 'free' | 'soon' | null
 export type Item = {
   title: string
   cover: string | null
+  /** The title lockup Figma ships alongside the cover. Unused by default —
+   *  titles live in the UI layer — and read only by the Top 10 rail, which the
+   *  source design sets as poster art with the lockup on it. */
+  logo?: string | null
   /** 'title' → 2:3 poster. Every browsable row uses it, including the sport
    *  shelf and Continue watching, because the artwork is portrait and the row
    *  system is built around it.
@@ -72,6 +76,41 @@ function metaFor(title: string, shape: Item['shape']): string {
 const EXTRA =
   /nedifuzate|interviurile|jurnal de c|jurnal de calatorie|extra\b|podcastito|making of|express talk|fiertzi/i
 
+/** A cover that came out of Figma is a real 537×906 key-art poster. Anything
+ *  else is a 16:9 still fetched from AntenaPLAY, which survives a 16:9 card but
+ *  gets butchered by a 2:3 crop. */
+const hasPortraitPoster = (item: Poster) => !!item.cover && /^[0-9a-f]{40}$/.test(item.cover)
+
+/** What to put in Continue watching.
+ *
+ *  Two constraints, both learned the hard way. It must not repeat the head of
+ *  Trending — the first version took Trending's first eight and the two rows
+ *  showed the same posters, which reads as a bug. And every card must have a
+ *  real portrait poster: the second version walked the rails' tails, which is
+ *  exactly where the 16:9 stills live, so the row filled up with hard-cropped
+ *  frames. "În curând" is left out too — a resume row should not offer to
+ *  continue something that has not aired.
+ *
+ *  Deterministic, so the row does not reshuffle between loads. */
+function resumePicks(count: number): Poster[] {
+  const shown = new Set(trending.slice(0, 10).map((i) => i.name))
+  const pools = [filmeSerialeNoi, topSeriale, topFilme, trending, insulaRomania, asiaAmerica].map(
+    (rail) => rail.filter((i) => i.name && hasPortraitPoster(i) && !shown.has(i.name)),
+  )
+
+  const seen = new Set<string>()
+  const out: Poster[] = []
+  for (let depth = 0; out.length < count && depth < 20; depth++) {
+    for (const pool of pools) {
+      const item = pool[depth]
+      if (!item || seen.has(item.name) || out.length >= count) continue
+      seen.add(item.name)
+      out.push(item)
+    }
+  }
+  return out
+}
+
 function extras(): Poster[] {
   const seen = new Set<string>()
   const out: Poster[] = []
@@ -90,12 +129,12 @@ function extras(): Poster[] {
 function asShape(items: Poster[], shape: Item['shape'], badge: BadgeKind = null): Item[] {
   return items.map((p) => {
     const title = p.name || ''
-    return { title, cover: p.cover, shape, badge, meta: metaFor(title, shape) }
+    return { title, cover: p.cover, logo: p.logo ?? null, shape, badge, meta: metaFor(title, shape) }
   })
 }
 
 export const rows = {
-  continueWatching: asShape(trending.slice(0, 8), 'title').map((item, i) => {
+  continueWatching: asShape(resumePicks(8), 'title').map((item, i) => {
     const progress = [0.62, 0.18, 0.87, 0.34, 0.51, 0.09, 0.73, 0.44][i]
     const left = [16, 38, 6, 31, 24, 43, 12, 27][i]
     return {

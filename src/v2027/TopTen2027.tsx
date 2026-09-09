@@ -13,7 +13,12 @@ import type { Item } from './catalog'
  *
  *  Tinting each numeral from its own card rather than from the hovered one is
  *  deliberate: it means something (this title, this colour) and it holds still
- *  while the pointer moves. */
+ *  while the pointer moves.
+ *
+ *  This is also the one rail that keeps the title lockup on the artwork, the
+ *  way the Figma file sets it — ranked promo art is a poster, not a catalogue
+ *  entry — so the cards carry no caption and the numeral bottom-aligns to the
+ *  poster itself. */
 export function TopTen2027({ title, items }: { title: string; items: Item[] }) {
   return (
     <Row title={title} itemPitch={300} seeAll={false}>
@@ -25,7 +30,7 @@ export function TopTen2027({ title, items }: { title: string; items: Item[] }) {
                 is painted behind the poster */}
             <span
               aria-hidden
-              className="-me-[34px] select-none bg-clip-text pb-[74px] font-black leading-[0.72] tracking-[-0.08em] text-transparent"
+              className="-me-[34px] select-none bg-clip-text pb-[20px] font-black leading-[0.72] tracking-[-0.08em] text-transparent"
               style={{
                 fontSize: 'clamp(120px, 13vw, 210px)',
                 backgroundImage: `linear-gradient(180deg, hsl(${a1} / 0.95) 0%, hsl(${a2} / 0.5) 100%)`,
@@ -34,7 +39,7 @@ export function TopTen2027({ title, items }: { title: string; items: Item[] }) {
               {i + 1}
             </span>
             <div className="relative z-10">
-              <TitleCard item={item} width={214} />
+              <TitleCard item={item} width={214} lockup />
             </div>
           </div>
         )

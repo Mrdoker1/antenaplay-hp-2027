@@ -13,8 +13,24 @@ import { tidyTitle } from './title'
  *  layer under the art, never burnt into it, which is why one type system can
  *  now hold the whole grid together. On hover the card lifts and the metadata
  *  block slides up; the artwork feeds its colour to the page. */
-export function TitleCard({ item, width = 232 }: { item: Item; width?: number }) {
+export function TitleCard({
+  item,
+  width = 232,
+  lockup = false,
+}: {
+  item: Item
+  width?: number
+  /** Show the title lockup burnt into the key art instead of a caption below.
+   *
+   *  The house rule is titles in the UI layer — that is what lets one type
+   *  system hold the grid together. Top 10 is the deliberate exception: the
+   *  Figma file ships a separate lockup for every card in that rail and uses
+   *  it, because ranked promo art is a poster, not a catalogue entry. Rendering
+   *  both would print the title twice, so this mode drops the caption. */
+  lockup?: boolean
+}) {
   const { feed } = useColorFeed()
+  const lockupSrc = lockup ? asset(item.logo) : null
 
   return (
     <a
@@ -36,6 +52,16 @@ export function TitleCard({ item, width = 232 }: { item: Item; width?: number })
             <Badge kind={item.badge} />
           </div>
         )}
+        {lockup && lockupSrc && (
+          <img
+            src={lockupSrc}
+            alt={item.title}
+            loading="lazy"
+            decoding="async"
+            className="pointer-events-none absolute inset-x-[15%] bottom-[7.5%] max-h-[34%] w-[70%] object-contain object-bottom"
+          />
+        )}
+
         {item.progress !== undefined && (
           <div className="absolute inset-x-0 bottom-0 h-[4px] overflow-hidden bg-white/20">
             <div
@@ -59,12 +85,14 @@ export function TitleCard({ item, width = 232 }: { item: Item; width?: number })
 
       {/* fixed-height caption: metadata stays on one baseline across the row
           however long the titles are */}
-      <div className="h-[74px] pt-[12px]">
-        <h3 className="line-clamp-2 h-[42px] text-balance text-[15px]/[21px] font-semibold tracking-[-0.005em] text-fg">
-          {tidyTitle(item.title)}
-        </h3>
-        <Meta className="mt-[4px] truncate">{item.meta}</Meta>
-      </div>
+      {!lockup && (
+        <div className="h-[74px] pt-[12px]">
+          <h3 className="line-clamp-2 h-[42px] text-balance text-[15px]/[21px] font-semibold tracking-[-0.005em] text-fg">
+            {tidyTitle(item.title)}
+          </h3>
+          <Meta className="mt-[4px] truncate">{item.meta}</Meta>
+        </div>
+      )}
     </a>
   )
 }
