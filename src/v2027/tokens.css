@@ -1,0 +1,186 @@
+/* ── AntenaPLAY 2027 — visual direction ───────────────────────────────────
+   A skin, not a rewrite: same content model as the baseline, new visual
+   language. Everything here is tokens so the Figma hand-off is 1:1.        */
+
+@theme {
+  /* Type. Red Hat Display stays the brand voice; it just finally gets to
+     behave like a display face. Metadata moves to mono so it reads as data
+     rather than as more prose. */
+  --font-display: 'Red Hat Display', 'Helvetica Neue', Arial, sans-serif;
+  --font-meta: 'Roboto Mono', ui-monospace, SFMono-Regular, monospace;
+
+  /* Four raised surfaces with a cool tonal shift instead of one flat black.
+     Pure #000 is what dates the current page. */
+  --color-s0: #0a0a0c;
+  --color-s1: #121216;
+  --color-s2: #1a1a20;
+  --color-s3: #24242c;
+
+  --color-fg: #f5f5f7;
+  --color-fg-muted: #9c9ca8;
+  --color-fg-faint: #7d7d8a; /* 5.3:1 on --color-s0 */
+
+  /* Red is an accent again: CTA, LIVE, focus. Nothing else. */
+  --color-brand: #ea1d25;
+  --color-brand-hi: #ff3b43;
+
+  --radius-card: 14px;
+  --radius-tile: 18px;
+}
+
+/* Light theme. Art still carries the screen; the chrome just stops shouting. */
+@layer base {
+  :root[data-theme='light'] {
+    --color-s0: #f4f4f6;
+    --color-s1: #ffffff;
+    --color-s2: #ebebef;
+    --color-s3: #dedee4;
+    --color-fg: #14141a;
+    --color-fg-muted: #45454f; /* 8.8:1 on light --color-s0 */
+    --color-fg-faint: #5e5e68; /* 5.6:1 on light --color-s0 */
+  }
+}
+
+@layer base {
+  .v2027 {
+    background-color: var(--color-s0);
+    color: var(--color-fg);
+    font-family: var(--font-display);
+  }
+
+  /* Visible focus ring — keyboard users get the same affordance the D-pad
+     will get on TV. */
+  .v2027 :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+}
+
+/* The page background breathes with whatever is in focus. Three lobes so the
+   shift reads as a mood change, not as a coloured rectangle.
+
+   `background-image` is NOT an animatable property — a transition on it snaps —
+   so two of these layers are stacked and the incoming one fades in on opacity,
+   which the compositor can interpolate. Kept deliberately low-contrast: this is
+   ambient light, not a colour block. */
+@utility mesh-layer {
+  background-image:
+    radial-gradient(70% 55% at 12% 0%, hsl(var(--a1) / 0.3) 0%, transparent 70%),
+    radial-gradient(60% 50% at 88% 8%, hsl(var(--a2) / 0.22) 0%, transparent 72%),
+    radial-gradient(90% 70% at 50% 110%, hsl(var(--a1) / 0.12) 0%, transparent 76%);
+  transition-property: opacity;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity;
+}
+
+/* Film grain. 3% is enough to kill the flatness of large dark fields. */
+@utility grain {
+  position: relative;
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+/* Rails bleed past the gutter on the right so the row reads as continuing
+   off-screen rather than ending in a wall. */
+@utility rail-gutter {
+  padding-inline-start: clamp(32px, 4.6vw, 96px);
+  padding-inline-end: clamp(32px, 4.6vw, 96px);
+}
+
+@utility page-pad {
+  padding-inline: clamp(32px, 4.6vw, 96px);
+}
+
+/* One spring, used everywhere, so the whole surface feels like one object. */
+@utility spring {
+  transition-timing-function: cubic-bezier(0.22, 1.4, 0.36, 1);
+}
+
+/* Scroll-linked row reveal. */
+@utility reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 700ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@utility reveal-in {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v2027 *:not(.mesh-layer),
+  .v2027 *::before,
+  .v2027 *::after {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+  }
+  .v2027 .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The 2027 skin owns the document surface while it is mounted, so the page
+   ground matches in both themes. */
+@layer base {
+  :root[data-theme] body {
+    background-color: var(--color-s0);
+    color: var(--color-fg);
+  }
+}
+
+/* Artwork is dark whatever the theme is, so anything sitting *on* art pins the
+   foreground tokens to their dark-theme values locally. Page chrome — row
+   titles, nav, footer — keeps following the theme. This is what makes the light
+   theme survive without a second set of components. */
+@utility art-surface {
+  --color-s0: #0a0a0c;
+  --color-s2: #16161c;
+  --color-fg: #f5f5f7;
+  --color-fg-muted: #b9b9c4;
+  --color-fg-faint: #8d8d99;
+  color: var(--color-fg);
+}
+
+/* Captions laid over a bright photograph need more than the page's faint token
+   can give them. Used by the franchise takeover, where the key art is a
+   daylight aerial shot. */
+@utility on-photo {
+  --color-fg-muted: #dcdce4;
+  --color-fg-faint: #c2c2ce;
+}
+
+/* Hero motion. The trailer stream itself is behind AntenaPLAY's token gate, so
+   the stage animates the video's own first frame instead: a slow push-in with a
+   little drift, which is what reads as "video" from across a room anyway. */
+@utility ken-burns {
+  animation: ken-burns 22s ease-out both;
+}
+
+@keyframes ken-burns {
+  from {
+    transform: scale(1.06) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.16) translate3d(-1.6%, -1.2%, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v2027 .ken-burns {
+    animation: none !important;
+    transform: scale(1.06);
+  }
+}

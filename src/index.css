@@ -1,0 +1,57 @@
+@import 'tailwindcss';
+@import './v2027/tokens.css';
+
+/* ── Design tokens, lifted from the Figma file (node 1:2) ──────────────── */
+@theme {
+  --font-display: 'Red Hat Display', 'Helvetica Neue', Arial, sans-serif;
+
+  --color-ink: #161616; /* page + nav background */
+  --color-ink-raised: #1e1e1e; /* channel tiles, cards */
+  --color-hairline: #333333; /* 1px borders */
+  --color-brand: #ea1d25; /* Antena red */
+  --color-brand-strong: #c8151c;
+  --color-muted: #b3b3b3;
+
+  --spacing-gutter: 69.117px; /* page side padding */
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-ink);
+    color: #ffffff;
+    font-family: var(--font-display);
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@utility page-gutter {
+  padding-inline: var(--spacing-gutter);
+}
+
+/* Horizontal rails scroll, but without a visible scrollbar — the design
+   uses hover arrows instead. */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Top-10 backdrop. Sampled from the Figma render (node 1:3157): a red lobe
+   peaking near the top-right and a second one at the bottom-left, over black. */
+@utility bg-top-ten {
+  background-color: #050000;
+  background-image:
+    radial-gradient(62% 78% at 58% 4%, #7d0808 0%, rgba(125, 8, 8, 0) 72%),
+    radial-gradient(72% 64% at -4% 106%, #7a0000 0%, rgba(122, 0, 0, 0) 74%);
+}
