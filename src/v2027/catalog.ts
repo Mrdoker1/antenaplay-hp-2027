@@ -30,11 +30,14 @@ export type BadgeKind = 'live' | 'new' | 'free' | 'soon' | null
 export type Item = {
   title: string
   cover: string | null
-  /** 'title' → 2:3 poster, for anything you browse as a catalogue entry.
-   *  'wide' → 16:9, for what is playing or has a running time: live and
-   *  now-on-air, resume, and short-form clips. Genre does not decide this —
-   *  "AntenaPLAY Sport" is a shelf of competitions and reads as posters, while
-   *  "Live & Sport" is a schedule and reads as frames. */
+  /** 'title' → 2:3 poster. Every browsable row uses it, including the sport
+   *  shelf and Continue watching, because the artwork is portrait and the row
+   *  system is built around it.
+   *
+   *  'wide' → 16:9, reserved for a schedule: "Live & Sport" and the channel
+   *  tiles, where the frame stands for a moment in time rather than a title.
+   *  Genre does not decide this — "AntenaPLAY Sport" is a shelf and reads as
+   *  posters, while "Live & Sport" is a timetable and reads as frames. */
   shape: 'title' | 'wide'
   badge: BadgeKind
   meta: string
@@ -92,7 +95,7 @@ function asShape(items: Poster[], shape: Item['shape'], badge: BadgeKind = null)
 }
 
 export const rows = {
-  continueWatching: asShape(trending.slice(0, 8), 'wide').map((item, i) => {
+  continueWatching: asShape(trending.slice(0, 8), 'title').map((item, i) => {
     const progress = [0.62, 0.18, 0.87, 0.34, 0.51, 0.09, 0.73, 0.44][i]
     const left = [16, 38, 6, 31, 24, 43, 12, 27][i]
     return {

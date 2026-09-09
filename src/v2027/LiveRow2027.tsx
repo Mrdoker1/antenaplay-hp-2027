@@ -45,6 +45,8 @@ export function LiveRow2027() {
                 <img
                   src={still}
                   alt=""
+                  loading="lazy"
+                  decoding="async"
                   className="absolute inset-0 size-full object-cover spring transition-transform duration-700 group-hover/card:scale-[1.05]"
                 />
               )}

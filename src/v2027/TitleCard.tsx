@@ -36,6 +36,15 @@ export function TitleCard({ item, width = 232 }: { item: Item; width?: number })
             <Badge kind={item.badge} />
           </div>
         )}
+        {item.progress !== undefined && (
+          <div className="absolute inset-x-0 bottom-0 h-[4px] overflow-hidden bg-white/20">
+            <div
+              className="h-full bg-brand"
+              style={{ width: `${Math.round(item.progress * 100)}%` }}
+            />
+          </div>
+        )}
+
         <span className="absolute inset-x-0 bottom-0 flex translate-y-full items-center justify-center gap-[8px] p-[12px] opacity-0 spring transition-all duration-500 group-hover/card:translate-y-0 group-hover/card:opacity-100">
           <span className="grid size-[34px] place-items-center rounded-full bg-white text-black">
 <PlayGlyph className="size-[15px]" />

@@ -77,7 +77,7 @@ export function Hero2027() {
       <div className="absolute inset-0" style={{ transform: `translate3d(0, ${offset}px, 0)` }}>
         {/* keyed on the slide so the push-in restarts with each one */}
         <div key={index} className="ken-burns size-full">
-          <CardArt cover={slide.still ?? slide.poster ?? null} title={slide.title} />
+          <CardArt cover={slide.still ?? slide.poster ?? null} title={slide.title} eager />
         </div>
       </div>
 

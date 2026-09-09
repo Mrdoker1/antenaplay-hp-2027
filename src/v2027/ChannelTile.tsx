@@ -40,6 +40,8 @@ export function ChannelTile({ channel }: { channel: ChannelItem }) {
           <img
             src={logo}
             alt={channel.name}
+            loading="lazy"
+            decoding="async"
             className="absolute right-[14px] top-[14px] size-[78px] rounded-[12px] bg-black/40 object-contain p-[9px] backdrop-blur-sm spring transition-transform duration-500 group-hover/tile:scale-[1.06]"
           />
         )}

@@ -20,10 +20,15 @@ export function CardArt({
   cover,
   title,
   className = '',
+  eager = false,
 }: {
   cover: string | null
   title: string
   className?: string
+  /** Set for artwork above the fold. Everything else defers: the page carries
+   *  a few hundred stills, and fetching them all up front makes a shared link
+   *  crawl before the first row is even reachable. */
+  eager?: boolean
 }) {
   const src = cover === FIGMA_PLACEHOLDER ? null : asset(cover)
 
@@ -38,7 +43,16 @@ export function CardArt({
      * The AntenaPLAY stills are 16:9, where the subject sits above the middle,
      * so those bias slightly upward from centre. */
     const position = isFigmaExport(cover) ? 'object-top' : 'object-[center_32%]'
-    return <img src={src} alt="" className={`size-full object-cover ${position} ${className}`} />
+    return (
+      <img
+        src={src}
+        alt=""
+        loading={eager ? 'eager' : 'lazy'}
+        decoding={eager ? 'sync' : 'async'}
+        fetchPriority={eager ? 'high' : 'auto'}
+        className={`size-full object-cover ${position} ${className}`}
+      />
+    )
   }
 
   const { a1, a2 } = accentFromTitle(title)

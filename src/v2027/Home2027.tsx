@@ -10,7 +10,6 @@ import { Row } from './Row'
 import { TitleCard } from './TitleCard'
 import { Takeover2027 } from './Takeover2027'
 import { TopTen2027 } from './TopTen2027'
-import { WideCard } from './WideCard'
 import { backdrops } from '../data/backdrops'
 import { channelsFree, channelsTv, rows } from './catalog'
 
@@ -46,9 +45,9 @@ export default function Home2027() {
         <main className="pb-[40px]">
           <Hero2027 />
 
-          <Row title="Continuă de unde ai rămas" itemPitch={388} seeAll={false}>
+          <Row title="Continuă de unde ai rămas" itemPitch={248} seeAll={false}>
             {rows.continueWatching.map((item, i) => (
-              <WideCard key={`${item.title}-${i}`} item={item} />
+              <TitleCard key={`${item.title}-${i}`} item={item} />
             ))}
           </Row>
 
