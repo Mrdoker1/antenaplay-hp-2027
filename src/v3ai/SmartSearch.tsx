@@ -69,7 +69,7 @@ export function SmartSearch({ open, onOpenChange }: { open: boolean; onOpenChang
           open ? 'v3-ai-ring' : 'bg-white/6 hover:bg-white/10'
         }`}
       >
-        <IconSparkle className={`size-[20px] shrink-0 text-v3-ai ${thinking ? 'v3-thinking' : ''}`} />
+        <IconSparkle className={`size-[20px] shrink-0 text-v3-fg ${thinking ? 'v3-thinking' : ''}`} />
         <input
           ref={input}
           value={query}
