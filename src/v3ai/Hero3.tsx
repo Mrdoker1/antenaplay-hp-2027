@@ -7,6 +7,8 @@ import { tidyTitle } from '../v2027/title'
 import { HeroVideo } from './HeroVideo'
 
 const ADVANCE_MS = 10000
+/** A slide whose trailer is running earns more airtime than a still. */
+const ADVANCE_MS_VIDEO = 20000
 
 /** Scores are mockup values. Derived from the title so a given show always
  *  shows the same numbers rather than flickering between renders. */
@@ -60,12 +62,17 @@ export function Hero3() {
     return () => clearTimeout(t)
   }, [slide.youtubeId])
 
-  // the carousel holds while a trailer is running
+  /** Dwell time for the slide on screen. A running trailer gets longer, but it
+   *  does not stop the carousel: the trailer autostarts, so holding on `playing`
+   *  meant the hero never left the first slide that had one. Only hover holds
+   *  it, because that is the viewer asking. */
+  const dwell = playing ? ADVANCE_MS_VIDEO : ADVANCE_MS
+
   useEffect(() => {
-    if (paused || playing) return
-    const t = setTimeout(() => goTo(index + 1), ADVANCE_MS)
+    if (paused) return
+    const t = setTimeout(() => goTo(index + 1), dwell)
     return () => clearTimeout(t)
-  }, [index, paused, playing, goTo])
+  }, [index, paused, dwell, goTo])
 
   return (
     <section
@@ -192,6 +199,10 @@ export function Hero3() {
         </svg>
       </button>
 
+      {/* Each segment doubles as the countdown to the next slide: the current
+          one fills over the dwell time, the ones behind it stay full, and it
+          pauses exactly when the carousel does — on hover — so the bar never
+          claims progress that is not happening. */}
       <div className="v3-inset absolute inset-x-0 bottom-[clamp(22px,3vh,38px)] flex gap-[7px]">
         {heroSlides.map((sl, i) => (
           <button
@@ -200,10 +211,21 @@ export function Hero3() {
             onClick={() => goTo(i)}
             aria-label={`${i + 1}. ${sl.title}`}
             aria-current={i === index}
-            className={`h-[3px] flex-1 rounded-full transition-colors ${
-              i === index ? 'bg-v3-action' : 'bg-white/22 hover:bg-white/45'
-            }`}
-          />
+            className="group/seg h-[3px] flex-1 overflow-hidden rounded-full bg-white/22 transition-colors hover:bg-white/40"
+          >
+            <span
+              key={i === index ? `${index}-live` : 'idle'}
+              className="v3-seg-fill block h-full origin-left rounded-full bg-v3-action"
+              style={
+                i === index
+                  ? {
+                      animation: `v3-seg ${dwell}ms linear forwards`,
+                      animationPlayState: paused ? 'paused' : 'running',
+                    }
+                  : { transform: i < index ? 'scaleX(1)' : 'scaleX(0)' }
+              }
+            />
+          </button>
         ))}
       </div>
     </section>

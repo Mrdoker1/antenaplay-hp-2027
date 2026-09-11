@@ -171,6 +171,13 @@ expanded. The height animates on `grid-template-rows: 0fr → 1fr`, which tweens
 real height without measuring the content or hard-coding one; where a browser
 cannot interpolate `fr`, both states still work and only the tween is lost.
 
+**The hero's slide indicator is a countdown.** Each segment fills over the
+slide's dwell time, the ones behind stay full, and it pauses exactly when the
+carousel does — on hover. Driven as `scaleX` rather than `width` so it runs on
+the compositor, and excluded from the reduced-motion override, because it is a
+progress readout rather than decoration and the carousel still advances on a
+timer. A slide whose trailer is running gets 20s instead of 10s.
+
 **The hero plays.** AntenaPLAY's own trailer stream is behind their token gate,
 so the hero autoplays the official upload from each show's own YouTube channel —
 their publishing, their player, nothing worked around. Three slides have one

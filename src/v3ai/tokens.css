@@ -92,6 +92,17 @@
   animation: v3-rise 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* Hero slide progress. Driven as a transform rather than a width so it runs on
+   the compositor, and left-anchored so it fills toward the next slide. */
+@keyframes v3-seg {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
 @keyframes v3-pulse-ai {
   0%,
   100% {
@@ -107,7 +118,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .v3ai *,
+  .v3ai *:not(.v3-seg-fill),
   .v3ai *::before,
   .v3ai *::after {
     animation-duration: 1ms !important;
