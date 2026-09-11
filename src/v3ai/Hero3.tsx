@@ -3,6 +3,7 @@ import { heroSlides } from '../data/hero'
 import { asset } from '../lib/assets'
 import { accentFromTitle } from '../v2027/accent'
 import { PlayGlyph } from '../v2027/PlayGlyph'
+import { tidyTitle } from '../v2027/title'
 import { HeroVideo } from './HeroVideo'
 
 const ADVANCE_MS = 10000
@@ -19,13 +20,14 @@ function scores(title: string): { public: number; critics: number } {
   return { public: 68 + (n % 30), critics: 55 + ((n >> 7) % 40) }
 }
 
-/** Splits an AntenaPLAY title on its own separator so the qualifier can take
- *  the accent colour — the two-tone display treatment from Figma 10:246, but
- *  driven by the naming convention instead of an arbitrary word. */
-function split(title: string): [string, string | null] {
-  const i = title.indexOf('|')
-  if (i < 0) return [title, null]
-  return [title.slice(0, i).trim(), title.slice(i + 1).trim()]
+/** The hero type scale of the second skin. Romanian titles run to 46
+ *  characters, so one fixed size either wastes the stage on a short title or
+ *  lets a long one climb into the header; the size steps down by length and the
+ *  line count is capped on top of that. */
+function titleSize(title: string): string {
+  if (title.length <= 22) return 'clamp(40px, 5.4vw, 88px)'
+  if (title.length <= 34) return 'clamp(34px, 4.4vw, 68px)'
+  return 'clamp(26px, 3.2vw, 52px)'
 }
 
 export function Hero3() {
@@ -39,7 +41,6 @@ export function Hero3() {
 
   const slide = heroSlides[index]
   const art = asset(slide.still) ?? asset(slide.poster)
-  const [lead, tail] = split(slide.title)
   const s = scores(slide.title)
   const { a1 } = accentFromTitle(slide.title)
   const stage = useRef<HTMLElement>(null)
@@ -100,14 +101,15 @@ export function Hero3() {
             Sezon nou · exclusiv AntenaPLAY
           </p>
 
-          <h1 className="v3-display mt-[16px] text-[clamp(38px,4.6vw,76px)] uppercase">
-            {lead}
-            {tail && (
-              <>
-                {' '}
-                <span className="text-v3-action">{tail}</span>
-              </>
-            )}
+          {/* Set as the second skin sets it: sentence case, one colour, size
+              stepped by length, and leading never under 1.06 — Romanian marks
+              sit above ă â î and below ș ț, and a tighter line box shaves
+              them, which the uppercase condensed version did. */}
+          <h1
+            className="mt-[16px] line-clamp-3 text-balance pb-[0.08em] font-black leading-[1.06] tracking-[-0.032em]"
+            style={{ fontSize: titleSize(slide.title) }}
+          >
+            {tidyTitle(slide.title)}
           </h1>
 
           <div className="mt-[16px] flex flex-wrap items-center gap-[10px] font-meta text-[12px] uppercase tracking-[0.1em] text-v3-dim">

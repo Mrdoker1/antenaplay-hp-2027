@@ -142,7 +142,7 @@ additional Figma mockups in the same file:
 | --- | --- | --- |
 | `10:74`, `10:2`, `10:246` | Left icon rail instead of a top nav, which frees the whole top edge for search. It widens on hover to show labels, so it costs no width at rest and is not a guessing game either. The active item is marked in brand red, as in `10:2`. | `LeftRail` |
 | `12:1531` | Floating header pill — inset from the edges, `rgba(0,0,0,0.5)` over a 25px blur, 24px radius — rather than a bar welded to the top. | `TopBar` |
-| `10:246` | Two-tone condensed display title. Driven by AntenaPLAY's own naming convention: everything after the `\|` separator takes the accent, so "Asia Express \| **Drumul Mătăsii**" splits itself. | `Hero3` |
+| `10:246` | Was a two-tone uppercase condensed title. Dropped — the hero is now set exactly as the second skin sets it: sentence case, one colour, size stepped by title length, leading never under 1.06. The condensed uppercase version at 0.94 shaved the marks off `ă â î`, which is the same trap the second skin already fell into once. | `Hero3` |
 | `12:1530` | Score pills with inline fills, relabelled Public / Critici, and the pill action row. | `Hero3` |
 | `12:1530`, `12:1866` | The search surface — see below. | `HeaderBar`, `SearchPanel` |
 

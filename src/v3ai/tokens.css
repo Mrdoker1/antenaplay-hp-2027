@@ -69,15 +69,6 @@
   box-shadow: 0 0 38px var(--color-v3-ai-glow);
 }
 
-/* Display type: condensed, tight, shouty — the register of 10:74 and 10:246,
-   set in the brand face rather than importing a second one. */
-@utility v3-display {
-  font-weight: 900;
-  letter-spacing: -0.035em;
-  line-height: 0.94;
-  font-stretch: condensed;
-}
-
 @utility v3-no-scrollbar {
   scrollbar-width: none;
   -ms-overflow-style: none;
