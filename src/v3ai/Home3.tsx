@@ -1,22 +1,27 @@
 import { useEffect, useState } from 'react'
-// The content model is shared across all three skins — same titles, same
-// badges, same derived metadata. Only the presentation differs.
 import { rows } from '../v2027/catalog'
+import { Row } from '../v2027/Row'
+import { TitleCard } from '../v2027/TitleCard'
+import { TopTen2027 } from '../v2027/TopTen2027'
 import { Footer3 } from './Footer3'
+import { HeaderBar } from './HeaderBar'
 import { Hero3 } from './Hero3'
 import { LeftRail } from './LeftRail'
-import { Rail3 } from './Rail3'
-import { HeaderBar } from './HeaderBar'
 import { useSmartSearch } from './useSmartSearch'
 
 /** AntenaPLAY home page — 2027 · AI.
  *
- *  The third of three skins over the same content model. It keeps the second
- *  one's palette and content, takes its structure from the additional Figma
- *  mockups — left icon rail (10:74, 10:2, 10:246), floating header pill
- *  (12:1531), two-tone condensed display titles (10:246) — and is built around
- *  one feature the other two do not have: describing what you feel like
- *  watching instead of naming it (12:1530, 12:1866). */
+ *  The third of three skins over the same content model. Structure comes from
+ *  the additional Figma mockups — left icon rail (10:74, 10:2, 10:246),
+ *  floating header pill (12:1531) — and it is built around one feature the
+ *  other two do not have: describing what you feel like watching instead of
+ *  naming it (12:1530, 12:1866).
+ *
+ *  The rows are the second skin's, used directly rather than reimplemented:
+ *  `Row`, `TitleCard` and `TopTen2027`, inside a `.v2027` wrapper so their own
+ *  cascade applies too. The wrapper only adds what this layout needs — the
+ *  offset past the left rail — and drops the background so the page ground
+ *  stays this skin's. */
 export default function Home3() {
   const [section, setSection] = useState('home')
   const smart = useSmartSearch()
@@ -45,18 +50,67 @@ export default function Home3() {
       <main className="pb-[20px]">
         <Hero3 />
 
-        <Rail3 title="Continuă de unde ai rămas" items={rows.continueWatching} seeAll={false} />
-        <Rail3 title="Trending în AntenaPLAY" items={rows.trending} />
-        <Rail3 title="Top 10 în România" items={rows.top10.slice(0, 10)} lockup seeAll={false} />
-        <Rail3 title="AntenaPLAY Sport" items={rows.sport} />
-        <Rail3 title="În curând" items={rows.inCurand} />
-        <Rail3 title="Momente nedifuzate la TV" items={rows.extras} />
-        <Rail3 title="Filme și seriale noi" items={rows.filmeSerialeNoi} />
-        <Rail3 title="Insula Iubirii · universul complet" items={rows.insulaRomania} />
-        <Rail3 title="Asia & America Express" items={rows.asiaAmerica} />
-        <Rail3 title="Top filme" items={rows.topFilme.slice(0, 10)} lockup seeAll={false} />
-        <Rail3 title="Top seriale" items={rows.topSeriale.slice(0, 10)} lockup seeAll={false} />
-        <Rail3 title="Power Couple România" items={rows.powerCouple} />
+        <div className="v2027 bg-transparent ps-[var(--v3-rail)]">
+          <Row title="Continuă de unde ai rămas" itemPitch={248} seeAll={false}>
+            {rows.continueWatching.map((item, i) => (
+              <TitleCard key={`${item.title}-${i}`} item={item} />
+            ))}
+          </Row>
+
+          <Row title="Trending în AntenaPLAY" itemPitch={248}>
+            {rows.trending.map((item, i) => (
+              <TitleCard key={`${item.title}-${i}`} item={item} />
+            ))}
+          </Row>
+
+          <TopTen2027 title="Top 10 în România" items={rows.top10} />
+
+          <Row title="AntenaPLAY Sport" itemPitch={248}>
+            {rows.sport.map((item, i) => (
+              <TitleCard key={`${item.title}-${i}`} item={item} />
+            ))}
+          </Row>
+
+          <Row title="În curând" itemPitch={248}>
+            {rows.inCurand.map((item, i) => (
+              <TitleCard key={`${item.title}-${i}`} item={item} />
+            ))}
+          </Row>
+
+          <Row title="Momente nedifuzate la TV" itemPitch={248}>
+            {rows.extras.map((item, i) => (
+              <TitleCard key={`${item.title}-${i}`} item={item} />
+            ))}
+          </Row>
+
+          <Row title="Filme și seriale noi" itemPitch={248}>
+            {rows.filmeSerialeNoi.map((item, i) => (
+              <TitleCard key={`${item.title}-${i}`} item={item} />
+            ))}
+          </Row>
+
+          <TopTen2027 title="Top filme" items={rows.topFilme} />
+
+          <Row title="Insula Iubirii · universul complet" itemPitch={248}>
+            {rows.insulaRomania.map((item, i) => (
+              <TitleCard key={`${item.title}-${i}`} item={item} />
+            ))}
+          </Row>
+
+          <Row title="Asia & America Express" itemPitch={248}>
+            {rows.asiaAmerica.map((item, i) => (
+              <TitleCard key={`${item.title}-${i}`} item={item} />
+            ))}
+          </Row>
+
+          <TopTen2027 title="Top seriale" items={rows.topSeriale} />
+
+          <Row title="Power Couple România" itemPitch={248}>
+            {rows.powerCouple.map((item, i) => (
+              <TitleCard key={`${item.title}-${i}`} item={item} />
+            ))}
+          </Row>
+        </div>
       </main>
 
       <Footer3 />

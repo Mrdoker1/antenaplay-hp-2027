@@ -146,14 +146,16 @@ additional Figma mockups in the same file:
 | `12:1530` | Score pills with inline fills, relabelled Public / Critici, and the pill action row. | `Hero3` |
 | `12:1530`, `12:1866` | The search surface — see below. | `HeaderBar`, `SearchPanel` |
 
-The rows use the card anatomy the second skin settled on — 232px on a 2:3 crop,
-no borders, lift and shadow doing the separating, hover actions sliding up from
-the card's bottom edge, a fixed-height caption so metadata sits on one baseline,
-and scroll-linked reveal. Only what this layout requires differs: the track is
-inset past the left rail and the pagers are placed against that inset rather
-than the page edge. Both skins read the same derived content model from
-`v2027/catalog.ts` — titles, badges, metadata, resume positions — so a change
-there lands in both, while the visual layers stay independent.
+**The rows are the second skin's components, not a copy of them.** `Home3`
+renders `v2027/Row`, `v2027/TitleCard` and `v2027/TopTen2027` directly, inside a
+`.v2027` wrapper so their own cascade applies too; the wrapper adds only the
+offset past the left icon rail and drops the background so the page ground stays
+this skin's. Verified rather than assumed: card 232px, artwork 348px, radius
+14px, heading 27.2px/700 in both skins, with the sole difference being the first
+card's left edge — 74px in the second skin, 158px here, exactly the 84px rail.
+
+That is deliberate coupling: editing `Row` or `TitleCard` now changes both skins.
+The AI skin keeps its own hero, header, left rail and footer.
 
 **One colour is added.** Everything the assistant touches is violet `#a06bff`;
 everything the viewer commands directly stays Antena red. Two capabilities, two
