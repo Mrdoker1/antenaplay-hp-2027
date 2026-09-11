@@ -29,6 +29,10 @@ export type HeroSlide = {
    *  their token/auth gate, so this is used to link out to their player rather
    *  than to play the file here. */
   trailerId?: string
+  /** Video id on the show's own YouTube channel, used to actually play
+   *  something behind the hero. Only filled where a published official upload
+   *  was found — the rest fall back to the still rather than to a guess. */
+  youtubeId?: string
 }
 
 export type LiveEvent = {

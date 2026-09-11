@@ -20,8 +20,11 @@
   --color-v3-faint: #7c7c8a;
 
   --color-v3-action: #ea1d25; /* Antena red: the viewer's own actions */
-  --color-v3-ai: #4ecaff; /* the assistant's colour, from node 12:1866 */
-  --color-v3-ai-glow: rgba(62, 127, 255, 0.4);
+  /* The assistant's colour. Node 12:1866 uses cyan, but on Antena's ground a
+     cool blue reads as a foreign system; violet sits next to the brand red as
+     the same family, so the AI surface can be distinct without being alien. */
+  --color-v3-ai: #a06bff;
+  --color-v3-ai-glow: rgba(160, 107, 255, 0.42);
 
   --v3-rail: 84px; /* width of the left icon rail */
 }
@@ -53,11 +56,17 @@
   backdrop-filter: blur(25px);
 }
 
-/* Figma 12:1866 — the search field once the assistant has focus. */
+/* The search field once the assistant has focus. Figma 12:1866 draws a flat
+   ring; here it is a gradient that runs from the brand red into the AI violet,
+   so the field belongs to both the platform and the feature. The two-background
+   trick is what lets a gradient live in a border. */
 @utility v3-ai-ring {
-  border: 2px solid var(--color-v3-ai);
-  box-shadow: 0 0 37.9px var(--color-v3-ai-glow);
-  background-color: rgba(0, 0, 0, 0.01);
+  border: 2px solid transparent;
+  background:
+    linear-gradient(var(--color-v3-panel), var(--color-v3-panel)) padding-box,
+    linear-gradient(96deg, var(--color-v3-action) 0%, var(--color-v3-ai) 62%, #d38bff 100%)
+      border-box;
+  box-shadow: 0 0 38px var(--color-v3-ai-glow);
 }
 
 /* Display type: condensed, tight, shouty — the register of 10:74 and 10:246,

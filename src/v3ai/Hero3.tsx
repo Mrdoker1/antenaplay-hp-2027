@@ -3,8 +3,10 @@ import { heroSlides } from '../data/hero'
 import { asset } from '../lib/assets'
 import { accentFromTitle } from '../v2027/accent'
 import { PlayGlyph } from '../v2027/PlayGlyph'
+import { HeroVideo } from './HeroVideo'
 
 const ADVANCE_MS = 10000
+const ADVANCE_MS_VIDEO = 22000
 
 /** Scores are mockup values. Derived from the title so a given show always
  *  shows the same numbers rather than flickering between renders. */
@@ -41,9 +43,12 @@ export function Hero3() {
 
   useEffect(() => {
     if (paused) return
-    const t = setTimeout(() => setIndex((i) => (i + 1) % heroSlides.length), ADVANCE_MS)
+    const t = setTimeout(
+      () => setIndex((i) => (i + 1) % heroSlides.length),
+      slide.youtubeId ? ADVANCE_MS_VIDEO : ADVANCE_MS,
+    )
     return () => clearTimeout(t)
-  }, [index, paused])
+  }, [index, paused, slide.youtubeId])
 
   return (
     <section
@@ -60,6 +65,9 @@ export function Hero3() {
           style={{ backgroundImage: `radial-gradient(80% 100% at 70% 10%, hsl(${a1} / 0.6), transparent 70%)` }}
         />
       )}
+
+      {/* the still stays underneath, so the trailer fades in over it */}
+      {slide.youtubeId && <HeroVideo key={slide.youtubeId} id={slide.youtubeId} muted={muted} />}
 
       {/* Figma 10:2 keeps the copy on a near-solid left column with the art
           bleeding out to the right, which is what makes long Romanian titles

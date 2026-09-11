@@ -7,7 +7,8 @@ export const heroSlides: HeroSlide[] = [
     "poster": "1bf4b3315931ab94806243290fdb5c715f932564",
     "still": "79f1085dfd41ddc84505cc2b0606f117e7ed356e",
     "slug": "asia-express-drumul-matasii",
-    "trailerId": "aQwdmg9bQfj"
+    "trailerId": "aQwdmg9bQfj",
+    "youtubeId": "6RYPPLbmTok"
   },
   {
     "title": "Lupul de pe Wall Street",
@@ -21,7 +22,8 @@ export const heroSlides: HeroSlide[] = [
     "description": "Testul suprem al relațiilor aduce cinci cupluri noi față în față cu ispitele care fură priviri și stârnesc pasiuni, în sezonul MAXIM, cel cu...",
     "poster": "c346a4679523ef32ebfa9237a965d2cb2532995d",
     "slug": "insula-iubirii-sezonul-10",
-    "trailerId": "Vusqa684Me5"
+    "trailerId": "Vusqa684Me5",
+    "youtubeId": "jvhWbe3fAbs"
   },
   {
     "title": "Băieți de oraș: Golden Boyz",
@@ -62,7 +64,8 @@ export const heroSlides: HeroSlide[] = [
     "description": "Insula Iubirii | Spania | Sezonul 10 / La Isla de las Tentaciones 10 se vede exclusiv în AntenaPLAY! Cinci cupluri își pun iubirea la încercare...",
     "poster": "23796bb4fae03fbbb6e9450c5fbfabe7d5dee7f7",
     "slug": "insula-iubirii-spania-sezonul-10",
-    "trailerId": "EMJGO2SfMcI"
+    "trailerId": "EMJGO2SfMcI",
+    "youtubeId": "ujyPsd4XN3Y"
   },
   {
     "title": "Destine cu parfum de lavandă",

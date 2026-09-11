@@ -146,9 +146,29 @@ additional Figma mockups in the same file:
 | `12:1530` | Score pills with inline fills, relabelled Public / Critici, and the pill action row. | `Hero3` |
 | `12:1530`, `12:1866` | The search surface — see below. | `SmartSearch` |
 
-**One colour is added.** Everything the assistant touches is cyan `#4ecaff` with
-the blue glow from `12:1866`; everything the viewer commands directly stays
-Antena red. Two capabilities, two signals, rather than one red doing both jobs.
+**One colour is added.** Everything the assistant touches is violet `#a06bff`;
+everything the viewer commands directly stays Antena red. Two capabilities, two
+signals, rather than one red doing both jobs. Node `12:1866` uses cyan for this,
+but on Antena's ground a cool blue reads as a foreign system — violet sits next
+to the brand red as the same family, and the focused search field draws its ring
+as a red→violet gradient so it belongs to both the platform and the feature.
+
+**The header is one surface.** The bar and the search results share a single
+rounded container, and opening the search grows that container rather than
+dropping a card beneath it — so the thing you clicked is the thing that
+expanded. The height animates on `grid-template-rows: 0fr → 1fr`, which tweens a
+real height without measuring the content or hard-coding one; where a browser
+cannot interpolate `fr`, both states still work and only the tween is lost.
+
+**The hero plays.** AntenaPLAY's own trailer stream is behind their token gate,
+so the hero plays the official upload from each show's own YouTube channel —
+their publishing, their player, nothing worked around. Three slides have one
+(`Asia Express | Drumul Mătăsii`, `Insula Iubirii | Sezonul 10`, `… | Spania |
+Sezonul 10`); the rest fall back to the still rather than to a guessed id. It
+waits a beat so the still is what you see first, is scaled past the frame
+because the player letterboxes 16:9 inside a much wider box, takes no pointer
+events, and the hero's own mute button drives it over `postMessage`. A slide
+with video stays on screen longer than one without.
 
 ### The hook: describe it, don't name it
 

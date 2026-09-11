@@ -15,7 +15,8 @@ import { Footer3 } from './Footer3'
 import { Hero3 } from './Hero3'
 import { LeftRail } from './LeftRail'
 import { Rail3 } from './Rail3'
-import { TopBar } from './TopBar'
+import { HeaderBar } from './HeaderBar'
+import { useSmartSearch } from './useSmartSearch'
 
 /** AntenaPLAY home page — 2027 · AI.
  *
@@ -27,7 +28,7 @@ import { TopBar } from './TopBar'
  *  watching instead of naming it (12:1530, 12:1866). */
 export default function Home3() {
   const [section, setSection] = useState('home')
-  const [searchOpen, setSearchOpen] = useState(false)
+  const smart = useSmartSearch()
 
   useEffect(() => {
     document.documentElement.dataset.skin = 'v3ai'
@@ -39,7 +40,7 @@ export default function Home3() {
   // the rail's search entry is the same surface as the header field
   const navigate = (key: string) => {
     if (key === 'search') {
-      setSearchOpen(true)
+      smart.setOpen(true)
       return
     }
     setSection(key)
@@ -47,8 +48,8 @@ export default function Home3() {
 
   return (
     <div className="v3ai">
-      <LeftRail active={searchOpen ? 'search' : section} onNavigate={navigate} />
-      <TopBar searchOpen={searchOpen} onSearchOpenChange={setSearchOpen} />
+      <LeftRail active={smart.open ? 'search' : section} onNavigate={navigate} />
+      <HeaderBar s={smart} />
 
       <main className="pb-[20px]">
         <Hero3 />
