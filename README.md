@@ -171,12 +171,21 @@ expanded. The height animates on `grid-template-rows: 0fr → 1fr`, which tweens
 real height without measuring the content or hard-coding one; where a browser
 cannot interpolate `fr`, both states still work and only the tween is lost.
 
-**The hero's slide indicator is a countdown.** Each segment fills over the
-slide's dwell time, the ones behind stay full, and it pauses exactly when the
-carousel does — on hover. Driven as `scaleX` rather than `width` so it runs on
-the compositor, and excluded from the reduced-motion override, because it is a
-progress readout rather than decoration and the carousel still advances on a
-timer. A slide whose trailer is running gets 20s instead of 10s.
+**The hero's slide indicator is the clock.** Each segment fills over the slide's
+dwell time and the ones behind stay full, and the slide advances on the
+segment's own `animationend` rather than on a parallel `setTimeout` — so the bar
+and the carousel cannot drift, and pausing the animation on hover pauses the
+carousel by construction.
+
+Two things that went wrong before it worked, both worth remembering: the dwell
+must key off whether a slide *has* a trailer, not off whether one is *playing*,
+or it changes 1.2s in when the trailer autostarts and restarts both the timer
+and the animation — the bar crawls, stalls, jumps, then finishes long before the
+slide changes. And the carousel must not hold while a trailer runs: trailers
+autostart, so it never left the first slide that had one. A slide with a trailer
+gets 20s, one without gets 10s. Driven as `scaleX` rather than `width` so it
+runs on the compositor, and excluded from the reduced-motion override because it
+is a progress readout, not decoration.
 
 **The hero plays.** AntenaPLAY's own trailer stream is behind their token gate,
 so the hero autoplays the official upload from each show's own YouTube channel —

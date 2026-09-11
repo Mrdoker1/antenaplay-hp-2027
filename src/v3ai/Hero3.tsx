@@ -62,17 +62,14 @@ export function Hero3() {
     return () => clearTimeout(t)
   }, [slide.youtubeId])
 
-  /** Dwell time for the slide on screen. A running trailer gets longer, but it
-   *  does not stop the carousel: the trailer autostarts, so holding on `playing`
-   *  meant the hero never left the first slide that had one. Only hover holds
-   *  it, because that is the viewer asking. */
-  const dwell = playing ? ADVANCE_MS_VIDEO : ADVANCE_MS
-
-  useEffect(() => {
-    if (paused) return
-    const t = setTimeout(() => goTo(index + 1), dwell)
-    return () => clearTimeout(t)
-  }, [index, paused, dwell, goTo])
+  /** Dwell time for this slide, fixed for as long as it is on screen.
+   *
+   *  It keys off whether the slide *has* a trailer, not off whether one is
+   *  currently running. Keying it off `playing` meant the value changed 1.2s in,
+   *  when the trailer autostarted — which restarted both the timer and the
+   *  progress animation with a new duration, so the bar crawled, stalled,
+   *  jumped, and then finished well before the slide actually changed. */
+  const dwell = slide.youtubeId ? ADVANCE_MS_VIDEO : ADVANCE_MS
 
   return (
     <section
@@ -216,6 +213,11 @@ export function Hero3() {
             <span
               key={i === index ? `${index}-live` : 'idle'}
               className="v3-seg-fill block h-full origin-left rounded-full bg-v3-action"
+              /* The bar is the clock. Advancing on its own animationend rather
+                 than on a parallel setTimeout means the two can never drift:
+                 hovering pauses the animation and therefore the carousel, and
+                 the slide changes exactly when the segment fills. */
+              onAnimationEnd={i === index ? () => goTo(index + 1) : undefined}
               style={
                 i === index
                   ? {
