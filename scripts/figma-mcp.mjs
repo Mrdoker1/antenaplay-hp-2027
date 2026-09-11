@@ -70,15 +70,24 @@ const result = await rpc('tools/call', {
   arguments: argsJson ? JSON.parse(argsJson) : {},
 })
 
-const text = (result?.content ?? [])
+const parts = result?.content ?? []
+const text = parts
   .filter((c) => c.type === 'text')
   .map((c) => c.text)
   .join('\n')
+// get_screenshot answers with an image part, not text
+const image = parts.find((c) => c.type === 'image' && c.data)
 
 if (outFile) {
   const { writeFile } = await import('node:fs/promises')
-  await writeFile(outFile, text)
-  console.log(`${outFile}  ${text.length} chars${result?.isError ? '  (isError)' : ''}`)
+  if (image) {
+    const buf = Buffer.from(image.data, 'base64')
+    await writeFile(outFile, buf)
+    console.log(`${outFile}  ${buf.length} bytes  ${image.mimeType ?? 'image'}`)
+  } else {
+    await writeFile(outFile, text)
+    console.log(`${outFile}  ${text.length} chars${result?.isError ? '  (isError)' : ''}`)
+  }
 } else {
-  console.log(text.slice(0, 1500))
+  console.log(text.slice(0, 1500) || `(image, ${image ? image.data.length : 0} b64 chars)`)
 }

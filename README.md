@@ -113,13 +113,15 @@ node scripts/figma-mcp.mjs get_design_context \
 Writing to a file keeps the large responses out of the conversation; parse them
 locally.
 
-## Two skins on one content model
+## Three skins on one content model
 
-The app ships both visual languages over the same data, switchable bottom-right
-(or by URL) so a pitch can show before/after on identical content:
+The app ships three visual languages over the same data, switchable bottom-right
+(or by URL), so a pitch can walk the same content through all of them:
 
 - `?v=baseline` — the page as it is today, the faithful Figma rebuild above.
-- `?v=2027` (default) — the 2027 visual direction, in `src/v2027/`.
+- `?v=2027` — the 2027 visual direction, in `src/v2027/`.
+- `?v=ai` (default) — 2027 · AI, in `src/v3ai/`: the same palette and content,
+  restructured around natural-language search.
 - `?theme=light` — the 2027 skin's light theme (also on the header toggle).
 - `?feed=off` — turns off colour feeding, if the wash is not wanted in the room.
 
@@ -130,6 +132,52 @@ addition is "Momente nedifuzate la TV", built from the catalogue's genuine
 companion content — interviews, travel diaries, "Extra", "Making Of" — matched
 by title in `catalog.ts` rather than resliced from another rail, so it does not
 repeat Trending's cards.
+
+## 2027 · AI — the third skin
+
+Keeps the brand palette of the other two and takes its structure from the
+additional Figma mockups in the same file:
+
+| From | What it contributes | Where |
+| --- | --- | --- |
+| `10:74`, `10:2`, `10:246` | Left icon rail instead of a top nav, which frees the whole top edge for search. It widens on hover to show labels, so it costs no width at rest and is not a guessing game either. The active item is marked in brand red, as in `10:2`. | `LeftRail` |
+| `12:1531` | Floating header pill — inset from the edges, `rgba(0,0,0,0.5)` over a 25px blur, 24px radius — rather than a bar welded to the top. | `TopBar` |
+| `10:246` | Two-tone condensed display title. Driven by AntenaPLAY's own naming convention: everything after the `\|` separator takes the accent, so "Asia Express \| **Drumul Mătăsii**" splits itself. | `Hero3` |
+| `12:1530` | Score pills with inline fills, relabelled Public / Critici, and the pill action row. | `Hero3` |
+| `12:1530`, `12:1866` | The search surface — see below. | `SmartSearch` |
+
+**One colour is added.** Everything the assistant touches is cyan `#4ecaff` with
+the blue glow from `12:1866`; everything the viewer commands directly stays
+Antena red. Two capabilities, two signals, rather than one red doing both jobs.
+
+### The hook: describe it, don't name it
+
+The field in the header expands into a full-width panel — heading, example
+phrases, live results with a one-line "vibe" descriptor each, and a total count.
+
+It genuinely answers. `src/v3ai/search.ts` indexes the real catalogue (every
+rail, every channel, every live event), derives tags from each title and from
+the rail it sits in, and ranks a typed phrase against them. So "reality cu
+cupluri" returns Mireasa and Insula Iubirii, "sport în direct" returns the F1
+sessions and the national-team fixtures, and "canale gratuite" returns the free
+channels. Three things it took a few passes to get right, all worth keeping in
+mind if the vocabulary is extended:
+
+- **Tag weights are inverse to frequency.** Without that, `reality` — which half
+  the catalogue carries — counted as much as `turkish`, which two titles carry,
+  and any broad phrase returned whatever sorted first.
+- **Romanian inflects, so prefixes must match — but carefully.** An unguarded
+  prefix rule had "cupluri" matching "cup" and pulling the whole World Cup shelf
+  into a query about couples. Hence the length floors in `related()`.
+- **Channels are down-weighted unless asked for**, or "film de acțiune" answers
+  with the FilmBox channels, whose names contain the word.
+
+It is a lexical matcher with a hand-built Romanian/English vocabulary, not a
+language model — the honest shape for a prototype. The interaction, the latency
+and the result surface are real; swapping in an embedding call later touches
+that one file. The short thinking beat before results is deliberate: a result
+set that lands on the same frame as the keystroke reads as a filter, and this is
+meant to read as an assistant. `/` opens it from anywhere, Escape closes it.
 
 ### What changes in the 2027 skin, and why
 
