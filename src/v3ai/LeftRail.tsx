@@ -24,9 +24,10 @@ export function LeftRail({
 }) {
   return (
     <nav className="group/rail fixed inset-y-0 left-0 z-40 flex w-[var(--v3-rail)] flex-col items-start bg-v3-panel/80 backdrop-blur-xl transition-[width] duration-300 hover:w-[232px] focus-within:w-[232px]">
-      {/* Spacer only. A mark here sat directly beside the wordmark in the
-          header and read as two logos for one brand. */}
-      <div className="h-[104px] w-full shrink-0" />
+      {/* The rail sits beside the header rather than under it, so this only
+          needs to line the first item up with the wordmark: the header pill
+          spans 20→108, and a 56px item centred on that starts at 36. */}
+      <div className="h-[36px] w-full shrink-0" />
 
       <ul className="flex w-full flex-col gap-[4px]">
         {ITEMS.map(({ key, label, Icon }) => {

@@ -9,7 +9,7 @@ import type { SmartSearch } from './useSmartSearch'
  *  floating beneath it, so the bar and the panel are one object. */
 export function SearchPanel({ s, onClose }: { s: SmartSearch; onClose: () => void }) {
   return (
-    <div className="relative">
+    <div className="relative pb-[12px]">
       {/* the assistant's colour as a wash, not as chrome */}
       <div
         className="pointer-events-none absolute inset-0"
@@ -89,7 +89,7 @@ export function SearchPanel({ s, onClose }: { s: SmartSearch; onClose: () => voi
         type="button"
         onClick={onClose}
         aria-label="Închide căutarea"
-        className="relative mx-auto mb-[12px] grid size-[30px] place-items-center rounded-full bg-white/8 text-v3-dim transition-colors hover:bg-white/16 hover:text-v3-fg"
+        className="relative mx-auto grid size-[30px] place-items-center rounded-full bg-white/8 text-v3-dim transition-colors hover:bg-white/16 hover:text-v3-fg"
       >
         <svg viewBox="0 0 24 24" className="size-[16px]" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M6 14l6-6 6 6" strokeLinecap="round" strokeLinejoin="round" />
