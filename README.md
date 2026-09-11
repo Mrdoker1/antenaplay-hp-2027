@@ -161,14 +161,30 @@ real height without measuring the content or hard-coding one; where a browser
 cannot interpolate `fr`, both states still work and only the tween is lost.
 
 **The hero plays.** AntenaPLAY's own trailer stream is behind their token gate,
-so the hero plays the official upload from each show's own YouTube channel —
+so the hero autoplays the official upload from each show's own YouTube channel —
 their publishing, their player, nothing worked around. Three slides have one
 (`Asia Express | Drumul Mătăsii`, `Insula Iubirii | Sezonul 10`, `… | Spania |
-Sezonul 10`); the rest fall back to the still rather than to a guessed id. It
-waits a beat so the still is what you see first, is scaled past the frame
-because the player letterboxes 16:9 inside a much wider box, takes no pointer
-events, and the hero's own mute button drives it over `postMessage`. A slide
-with video stays on screen longer than one without.
+Sezonul 10`); the rest keep the still rather than take a guessed id.
+
+Four things about `HeroVideo` that are easy to get wrong and were:
+
+- **`loop=1` needs `playlist=<id>`, and that makes it a playlist player**, which
+  draws previous / pause / next buttons over the video. The loop is driven from
+  the API instead: on ENDED, seek to 0 and play.
+- **State does not arrive as `onStateChange`.** In practice the widget API
+  reports it inside `infoDelivery.info.playerState`; read only the former and
+  the frame never learns it is playing.
+- **The frame is revealed only once the player says it is playing**, so the hero
+  shows key art while the player boots — and if a browser refuses muted
+  autoplay, the still simply stays rather than a paused player with an overlay.
+- **It is scaled past the frame and takes no pointer events**, because the player
+  letterboxes 16:9 inside a far wider box, and because neither YouTube's hover
+  UI nor its click targets should ever be reachable.
+
+One thing no parameter fixes: these are monetised uploads, so the embed can
+serve a pre-roll — a live check of an earlier build opened with a car advert
+behind the hero. Ambient autoplay with no such risk needs a file Antena hands
+over; until then this is the trade.
 
 ### The hook: describe it, don't name it
 

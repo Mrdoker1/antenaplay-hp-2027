@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { heroSlides } from '../data/hero'
 import { asset } from '../lib/assets'
 import { accentFromTitle } from '../v2027/accent'
@@ -6,7 +6,6 @@ import { PlayGlyph } from '../v2027/PlayGlyph'
 import { HeroVideo } from './HeroVideo'
 
 const ADVANCE_MS = 10000
-const ADVANCE_MS_VIDEO = 22000
 
 /** Scores are mockup values. Derived from the title so a given show always
  *  shows the same numbers rather than flickering between renders. */
@@ -33,6 +32,10 @@ export function Hero3() {
   const [index, setIndex] = useState(0)
   const [paused, setPaused] = useState(false)
   const [muted, setMuted] = useState(true)
+  /** Whether the trailer is running. Starts on its own shortly after the slide
+   *  appears, so the hero is motion rather than a poster, and the Trailer
+   *  button becomes a stop control. */
+  const [playing, setPlaying] = useState(false)
 
   const slide = heroSlides[index]
   const art = asset(slide.still) ?? asset(slide.poster)
@@ -41,14 +44,27 @@ export function Hero3() {
   const { a1 } = accentFromTitle(slide.title)
   const stage = useRef<HTMLElement>(null)
 
+  /** Changing slide always returns to key art — done here rather than in an
+   *  effect on `index`, so the reset belongs to the action that caused it. */
+  const goTo = useCallback((i: number) => {
+    setIndex(((i % heroSlides.length) + heroSlides.length) % heroSlides.length)
+    setPlaying(false)
+  }, [])
+
+  // start the trailer by itself once the key art has had a moment
   useEffect(() => {
-    if (paused) return
-    const t = setTimeout(
-      () => setIndex((i) => (i + 1) % heroSlides.length),
-      slide.youtubeId ? ADVANCE_MS_VIDEO : ADVANCE_MS,
-    )
+    if (!slide.youtubeId) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const t = setTimeout(() => setPlaying(true), 1200)
     return () => clearTimeout(t)
-  }, [index, paused, slide.youtubeId])
+  }, [slide.youtubeId])
+
+  // the carousel holds while a trailer is running
+  useEffect(() => {
+    if (paused || playing) return
+    const t = setTimeout(() => goTo(index + 1), ADVANCE_MS)
+    return () => clearTimeout(t)
+  }, [index, paused, playing, goTo])
 
   return (
     <section
@@ -67,7 +83,9 @@ export function Hero3() {
       )}
 
       {/* the still stays underneath, so the trailer fades in over it */}
-      {slide.youtubeId && <HeroVideo key={slide.youtubeId} id={slide.youtubeId} muted={muted} />}
+      {playing && slide.youtubeId && (
+        <HeroVideo key={slide.youtubeId} id={slide.youtubeId} muted={muted} />
+      )}
 
       {/* Figma 10:2 keeps the copy on a near-solid left column with the art
           bleeding out to the right, which is what makes long Romanian titles
@@ -125,12 +143,24 @@ export function Hero3() {
               <PlayGlyph className="size-[16px]" />
               Redă
             </a>
-            <button
-              type="button"
-              className="flex items-center gap-[9px] rounded-[100px] border border-v3-line bg-white/6 px-[22px] py-[12px] text-[14px]/[18px] font-semibold backdrop-blur-md transition-colors hover:bg-white/14"
-            >
-              Trailer
-            </button>
+            {slide.youtubeId ? (
+              <button
+                type="button"
+                onClick={() => setPlaying((p) => !p)}
+                className="flex items-center gap-[9px] rounded-[100px] border border-v3-line bg-white/6 px-[22px] py-[12px] text-[14px]/[18px] font-semibold backdrop-blur-md transition-colors hover:bg-white/14"
+              >
+                {playing ? 'Oprește trailerul' : 'Trailer'}
+              </button>
+            ) : (
+              <a
+                href={slide.slug ? `https://antenaplay.ro/${slide.slug}` : '#'}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-[9px] rounded-[100px] border border-v3-line bg-white/6 px-[22px] py-[12px] text-[14px]/[18px] font-semibold backdrop-blur-md transition-colors hover:bg-white/14"
+              >
+                Trailer
+              </a>
+            )}
             <button
               type="button"
               aria-label="Adaugă în listă"
@@ -165,7 +195,7 @@ export function Hero3() {
           <button
             key={sl.title}
             type="button"
-            onClick={() => setIndex(i)}
+            onClick={() => goTo(i)}
             aria-label={`${i + 1}. ${sl.title}`}
             aria-current={i === index}
             className={`h-[3px] flex-1 rounded-full transition-colors ${

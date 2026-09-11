@@ -24,9 +24,9 @@ export function LeftRail({
 }) {
   return (
     <nav className="group/rail fixed inset-y-0 left-0 z-40 flex w-[var(--v3-rail)] flex-col items-start bg-v3-panel/80 backdrop-blur-xl transition-[width] duration-300 hover:w-[232px] focus-within:w-[232px]">
-      <div className="flex h-[104px] w-full shrink-0 items-center ps-[30px]">
-        <span className="size-[10px] shrink-0 rounded-full bg-v3-action" aria-hidden />
-      </div>
+      {/* Spacer only. A mark here sat directly beside the wordmark in the
+          header and read as two logos for one brand. */}
+      <div className="h-[104px] w-full shrink-0" />
 
       <ul className="flex w-full flex-col gap-[4px]">
         {ITEMS.map(({ key, label, Icon }) => {
