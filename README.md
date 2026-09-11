@@ -144,7 +144,16 @@ additional Figma mockups in the same file:
 | `12:1531` | Floating header pill — inset from the edges, `rgba(0,0,0,0.5)` over a 25px blur, 24px radius — rather than a bar welded to the top. | `TopBar` |
 | `10:246` | Two-tone condensed display title. Driven by AntenaPLAY's own naming convention: everything after the `\|` separator takes the accent, so "Asia Express \| **Drumul Mătăsii**" splits itself. | `Hero3` |
 | `12:1530` | Score pills with inline fills, relabelled Public / Critici, and the pill action row. | `Hero3` |
-| `12:1530`, `12:1866` | The search surface — see below. | `SmartSearch` |
+| `12:1530`, `12:1866` | The search surface — see below. | `HeaderBar`, `SearchPanel` |
+
+The rows use the card anatomy the second skin settled on — 232px on a 2:3 crop,
+no borders, lift and shadow doing the separating, hover actions sliding up from
+the card's bottom edge, a fixed-height caption so metadata sits on one baseline,
+and scroll-linked reveal. Only what this layout requires differs: the track is
+inset past the left rail and the pagers are placed against that inset rather
+than the page edge. Both skins read the same derived content model from
+`v2027/catalog.ts` — titles, badges, metadata, resume positions — so a change
+there lands in both, while the visual layers stay independent.
 
 **One colour is added.** Everything the assistant touches is violet `#a06bff`;
 everything the viewer commands directly stays Antena red. Two capabilities, two

@@ -1,16 +1,7 @@
 import { useEffect, useState } from 'react'
-import {
-  asiaAmerica,
-  filmeSerialeNoi,
-  inCurand,
-  insulaRomania,
-  powerCouple,
-  sport,
-  top10,
-  topFilme,
-  topSeriale,
-  trending,
-} from '../data/posters'
+// The content model is shared across all three skins — same titles, same
+// badges, same derived metadata. Only the presentation differs.
+import { rows } from '../v2027/catalog'
 import { Footer3 } from './Footer3'
 import { Hero3 } from './Hero3'
 import { LeftRail } from './LeftRail'
@@ -54,16 +45,18 @@ export default function Home3() {
       <main className="pb-[20px]">
         <Hero3 />
 
-        <Rail3 title="Trending în AntenaPLAY" items={trending} />
-        <Rail3 title="Top 10 în România" items={top10.slice(0, 10)} lockup />
-        <Rail3 title="Live & Sport" items={sport} />
-        <Rail3 title="În curând" items={inCurand} />
-        <Rail3 title="Filme și seriale noi" items={filmeSerialeNoi} />
-        <Rail3 title="Insula Iubirii · universul complet" items={insulaRomania} />
-        <Rail3 title="Asia & America Express" items={asiaAmerica} />
-        <Rail3 title="Top filme" items={topFilme.slice(0, 10)} lockup />
-        <Rail3 title="Top seriale" items={topSeriale.slice(0, 10)} lockup />
-        <Rail3 title="Power Couple România" items={powerCouple} />
+        <Rail3 title="Continuă de unde ai rămas" items={rows.continueWatching} seeAll={false} />
+        <Rail3 title="Trending în AntenaPLAY" items={rows.trending} />
+        <Rail3 title="Top 10 în România" items={rows.top10.slice(0, 10)} lockup seeAll={false} />
+        <Rail3 title="AntenaPLAY Sport" items={rows.sport} />
+        <Rail3 title="În curând" items={rows.inCurand} />
+        <Rail3 title="Momente nedifuzate la TV" items={rows.extras} />
+        <Rail3 title="Filme și seriale noi" items={rows.filmeSerialeNoi} />
+        <Rail3 title="Insula Iubirii · universul complet" items={rows.insulaRomania} />
+        <Rail3 title="Asia & America Express" items={rows.asiaAmerica} />
+        <Rail3 title="Top filme" items={rows.topFilme.slice(0, 10)} lockup seeAll={false} />
+        <Rail3 title="Top seriale" items={rows.topSeriale.slice(0, 10)} lockup seeAll={false} />
+        <Rail3 title="Power Couple România" items={rows.powerCouple} />
       </main>
 
       <Footer3 />
