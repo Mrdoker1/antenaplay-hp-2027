@@ -192,10 +192,10 @@ export default function TvHome() {
           padding rather than margin. */}
       <div className="absolute inset-x-0 bottom-0" style={{ height: 360 }}>
         <div
-          className="tv-no-scrollbar h-full overflow-y-auto py-[18px]"
+          className="tv-no-scrollbar h-full overflow-y-auto py-[30px]"
           style={{
-            paddingLeft: 'calc(var(--tv-rail) + var(--tv-safe) - 18px)',
-            paddingRight: 'calc(var(--tv-safe) - 18px)',
+            paddingLeft: 'calc(var(--tv-rail) + var(--tv-safe) - 26px)',
+            paddingRight: 'calc(var(--tv-safe) - 26px)',
           }}
         >
           {RAILS.map((r, rowIndex) => (
@@ -207,7 +207,7 @@ export default function TvHome() {
               >
                 {r.title}
               </h2>
-              <div className="tv-no-scrollbar mt-[10px] flex gap-[16px] overflow-x-auto px-[18px] py-[14px]">
+              <div className="tv-no-scrollbar -my-[16px] mt-[-6px] flex gap-[16px] overflow-x-auto px-[26px] py-[30px]">
                 {r.items.map((it, colIndex) => (
                   <TvCard
                     key={`${it.title}-${colIndex}`}
