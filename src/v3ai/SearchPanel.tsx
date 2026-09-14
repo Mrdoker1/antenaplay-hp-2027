@@ -26,8 +26,8 @@ export function SearchPanel({ s, onClose }: { s: SmartSearch; onClose: () => voi
             Ce ai chef să vezi în seara asta?
           </h2>
           <p className="mt-[10px] text-[14px]/[21px] text-v3-dim">
-            Descrie starea, nu titlul — „reality cu cupluri", „ceva scurt și amuzant",
-            „sport în direct".
+            Descrie starea, nu titlul — în română sau în engleză. „film de toamnă",
+            „ceva scurt și amuzant", „90s sci-fi".
           </p>
 
           <ul className="mt-[18px] flex flex-wrap gap-[10px]">
@@ -100,7 +100,7 @@ export function SearchPanel({ s, onClose }: { s: SmartSearch; onClose: () => voi
 }
 
 function Result({ hit }: { hit: Hit }) {
-  const art = asset(hit.cover)
+  const art = asset(hit.art)
   const { a1, a2 } = accentFromTitle(hit.title)
 
   return (

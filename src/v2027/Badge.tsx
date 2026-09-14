@@ -15,9 +15,10 @@ const STYLES: Record<Exclude<BadgeKind, null>, { label: string; className: strin
   soon: { label: 'În curând', className: 'bg-black/55 text-white backdrop-blur-sm' },
 }
 
-export function Badge({ kind }: { kind: BadgeKind }) {
+export function Badge({ kind, label: override }: { kind: BadgeKind; label?: string }) {
   if (!kind) return null
-  const { label, className } = STYLES[kind]
+  const { label: fallback, className } = STYLES[kind]
+  const label = override ?? fallback
 
   return (
     <span

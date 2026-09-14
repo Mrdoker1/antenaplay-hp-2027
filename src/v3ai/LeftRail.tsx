@@ -18,12 +18,21 @@ const ITEMS = [
 export function LeftRail({
   active,
   onNavigate,
+  locked = false,
 }: {
   active: string
   onNavigate: (key: string) => void
+  /** While the search panel is open the rail stops expanding and drops below
+   *  the scrim — an expanded menu over a modal surface is two things asking for
+   *  attention at once. */
+  locked?: boolean
 }) {
   return (
-    <nav className="group/rail fixed inset-y-0 left-0 z-40 flex w-[var(--v3-rail)] flex-col items-start bg-v3-panel/80 backdrop-blur-xl transition-[width] duration-300 hover:w-[232px] focus-within:w-[232px]">
+    <nav
+      className={`group/rail fixed inset-y-0 left-0 flex w-[var(--v3-rail)] flex-col items-start bg-v3-panel/80 backdrop-blur-xl transition-[width] duration-300 ${
+        locked ? 'z-20' : 'z-50 hover:w-[232px] focus-within:w-[232px]'
+      }`}
+    >
       {/* The rail sits beside the header rather than under it, so this only
           needs to line the first item up with the wordmark: the header pill
           spans 20→108, and a 56px item centred on that starts at 36. */}

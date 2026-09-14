@@ -7,6 +7,8 @@
  *  - `src/assets/web/` — stills fetched from AntenaPLAY's own site for cards
  *    the Figma capture left as placeholders, named by the show's slug
  *    (`node scripts/fetch-antena-art.mjs`).
+ *  - `src/assets/films/` — posters for the film catalogue, named by its id
+ *    (`node scripts/import-film-pool.mjs`).
  *
  *  So a card carries either a hash or a slug and neither it nor the resolver
  *  needs to care which. Anything unresolved returns null and the card renders
@@ -19,6 +21,11 @@ const files = {
     import: 'default',
   }) as Record<string, string>),
   ...(import.meta.glob('../assets/web/*.{png,jpg,jpeg,webp}', {
+    eager: true,
+    query: '?url',
+    import: 'default',
+  }) as Record<string, string>),
+  ...(import.meta.glob('../assets/films/*.jpg', {
     eager: true,
     query: '?url',
     import: 'default',

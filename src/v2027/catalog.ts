@@ -44,6 +44,9 @@ export type Item = {
    *  posters, while "Live & Sport" is a timetable and reads as frames. */
   shape: 'title' | 'wide'
   badge: BadgeKind
+  /** Overrides the badge's own wording — used by the English skin, which shares
+   *  this model but not its language. */
+  badgeLabel?: string
   meta: string
   /** 0–1, drives the resume bar on Continue watching */
   progress?: number

@@ -44,7 +44,7 @@ export default function Home3() {
 
   return (
     <div className="v3ai">
-      <LeftRail active={smart.open ? 'search' : section} onNavigate={navigate} />
+      <LeftRail active={smart.open ? 'search' : section} onNavigate={navigate} locked={smart.open} />
       <HeaderBar s={smart} />
 
       <main className="pb-[20px]">

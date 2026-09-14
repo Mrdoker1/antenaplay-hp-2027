@@ -42,3 +42,19 @@ export type LiveEvent = {
   /** frame grab used as the card's thumbnail */
   still?: string
 }
+
+/** A film from the MovieGuesser catalogue. Unlike the AntenaPLAY entries these
+ *  carry real metadata — year, genres, countries — which is what lets the search
+ *  answer a description rather than only match words. */
+export type Film = {
+  /** also the poster's filename in src/assets/films */
+  id: string
+  ru: string
+  en: string
+  year: number
+  /** Kinopoisk genre names, in Russian */
+  genres: string[]
+  countries: string[]
+  /** a 1280×720 still, hotlinked */
+  frame: string | null
+}

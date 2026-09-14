@@ -49,7 +49,7 @@ export function TitleCard({
         <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover/card:opacity-100" />
         {item.badge && (
           <div className="absolute left-[10px] top-[10px]">
-            <Badge kind={item.badge} />
+            <Badge kind={item.badge} label={item.badgeLabel} />
           </div>
         )}
         {lockup && lockupSrc && (
