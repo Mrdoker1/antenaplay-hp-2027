@@ -43,6 +43,21 @@ export function TasteTuner({ s, onClose }: { s: SmartSearch; onClose: () => void
   const read = useMemo(() => taste(liked, passed), [liked, passed])
   const done = !card
 
+  /* What the column shows. While the deck lasts it is the queue, front card
+     first; once it is spent it is what you kept, so the block keeps its height
+     and ends on the answer rather than on a hole. */
+  const pile = useMemo(() => {
+    const source = done ? liked : deck
+    const at = done ? 0 : seen
+    const out: { item: TasteCard; d: number; gone: boolean; front: boolean }[] = []
+    source.forEach((item, i) => {
+      const d = i - at
+      if (d < -1 || d > VISIBLE) return
+      out.push({ item, d, gone: d < 0, front: d === 0 && !done })
+    })
+    return out
+  }, [deck, liked, seen, done])
+
   /* Answering only moves the queue along. Every card's position is derived
      from how far it is from the front, so one state change animates the whole
      row — the answered card out to the left, the rest up by one. */
@@ -74,42 +89,45 @@ export function TasteTuner({ s, onClose }: { s: SmartSearch; onClose: () => void
           ✕
         </button>
 
-        <div
-          className={`relative grid items-center gap-[clamp(16px,2vw,34px)] p-[clamp(18px,2.2vw,30px)] ${
-            done ? 'lg:grid-cols-[1fr_320px]' : 'lg:grid-cols-[360px_1fr_320px]'
-          }`}
-        >
-          {/* The stack. It leans out to the right and is cut off there, which
-              is the whole of what it has to say: there are more of these than
-              you are going to be asked about. The answered card leaves past
-              the left edge, so this clips on both sides. */}
-          {!done && (
+        <div className="relative grid items-center gap-[clamp(16px,2vw,34px)] p-[clamp(18px,2.2vw,30px)] lg:grid-cols-[360px_1fr_320px]">
+          {/* The pile. It leans out to the right and is cut off there, which is
+              the whole of what it has to say: there are more of these than you
+              are going to be asked about. The answered card leaves past the
+              left edge, so this clips on both sides — and the column stays
+              when the deck runs out, holding the block's height, with what you
+              kept in it instead of what you are being asked.
+
+              The recession is one gradient over the pile rather than opacity
+              on each card: fading the cards makes the panel show through them
+              and the whole thing goes grey and cheap, where a single ramp of
+              the page's own ground reads as depth. */}
+          <div
+            className="relative w-full overflow-hidden"
+            style={{ height: Math.round(CARD_W * 1.45) }}
+          >
+            {pile.map(({ item, d, gone, front }) => (
+              <Poster
+                key={item.key}
+                card={item}
+                front={front}
+                style={{
+                  width: CARD_W,
+                  transform: gone
+                    ? `translateX(${-CARD_W - 48}px) rotate(-6deg)`
+                    : `translateX(${d * STEP}px)`,
+                  opacity: gone ? 0 : 1,
+                  zIndex: VISIBLE + 2 - d,
+                }}
+              />
+            ))}
             <div
-              className="relative w-full overflow-hidden"
-              style={{ height: Math.round(CARD_W * 1.45) }}
-            >
-              {deck.map((item, i) => {
-                const d = i - seen
-                if (d < -1 || d > VISIBLE) return null
-                const gone = d < 0
-                return (
-                  <Poster
-                    key={item.key}
-                    card={item}
-                    front={d === 0}
-                    style={{
-                      width: CARD_W,
-                      transform: gone
-                        ? `translateX(${-CARD_W - 48}px) rotate(-6deg)`
-                        : `translateX(${d * STEP}px)`,
-                      opacity: gone ? 0 : Math.max(0.3, 1 - d * 0.11),
-                      zIndex: VISIBLE + 2 - d,
-                    }}
-                  />
-                )
-              })}
-            </div>
-          )}
+              aria-hidden
+              className="pointer-events-none absolute inset-0 z-40"
+              style={{
+                backgroundImage: `linear-gradient(to right, transparent ${CARD_W - 8}px, rgba(8,8,11,0.62) ${CARD_W + 96}px, rgba(8,8,11,0.9) 100%)`,
+              }}
+            />
+          </div>
 
           <div className="min-w-0 pe-[20px]">
             <p className="flex items-center gap-[8px] text-[12px]/[18px] uppercase tracking-[0.14em] text-v3-ai">
@@ -210,9 +228,6 @@ function Poster({
       }`}
     >
       {art && <img src={art} alt="" draggable={false} className="size-full object-cover" />}
-      {/* Only the card being answered is lit; the queue behind it is context,
-          and context that competes with the question is noise. */}
-      {!front && <div className="absolute inset-0 bg-v3-ground/45" />}
       {front && (
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-[10px] pt-[36px]">
           <p className="truncate text-[13px]/[18px] font-bold">{card.title}</p>
