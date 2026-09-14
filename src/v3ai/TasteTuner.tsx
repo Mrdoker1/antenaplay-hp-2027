@@ -26,6 +26,10 @@ import type { SmartSearch } from './useSmartSearch'
 /** Poster width, and the distance from one card to the next — the difference
  *  is the overlap that makes the row read as a queue rather than a shelf. */
 const CARD_W = 152
+/** Breathing room on every side but the right: the card being answered is
+ *  lifted and ringed, and both need somewhere to go. The right edge stays
+ *  tight, because that is where the queue is meant to run out of room. */
+const PAD = 9
 /** Half a card of offset: enough that every poster in the pile is readable,
  *  tight enough that the pile is a pile rather than a shelf. */
 const STEP = 62
@@ -107,7 +111,7 @@ export function TasteTuner({ s, onClose }: { s: SmartSearch; onClose: () => void
               the page's own ground reads as depth. */}
           <div
             className="relative w-full overflow-hidden"
-            style={{ height: Math.round(CARD_W * 1.45) }}
+            style={{ height: Math.round(CARD_W * 1.45) + PAD * 2 }}
           >
             {pile.map(({ item, d, gone, front }) => (
               <Poster
@@ -116,9 +120,11 @@ export function TasteTuner({ s, onClose }: { s: SmartSearch; onClose: () => void
                 front={front}
                 style={{
                   width: CARD_W,
+                  top: PAD,
+                  bottom: PAD,
                   transform: gone
                     ? `translateX(${-CARD_W - 48}px) rotate(-6deg)`
-                    : `translateX(${d * STEP}px)`,
+                    : `translateX(${PAD + d * STEP}px)${front ? ' scale(1.04)' : ''}`,
                   opacity: gone ? 0 : 1,
                   zIndex: VISIBLE + 2 - d,
                 }}
@@ -131,8 +137,8 @@ export function TasteTuner({ s, onClose }: { s: SmartSearch; onClose: () => void
               aria-hidden
               className="pointer-events-none absolute inset-y-0 left-0 z-40"
               style={{
-                width: CARD_W + Math.max(0, pile.filter((p) => !p.gone).length - 1) * STEP,
-                backgroundImage: `linear-gradient(to right, transparent ${CARD_W - 8}px, rgba(8,8,11,0.62) ${CARD_W + 96}px, rgba(8,8,11,0.9) 100%)`,
+                width: PAD * 2 + CARD_W + Math.max(0, pile.filter((p) => !p.gone).length - 1) * STEP,
+                backgroundImage: `linear-gradient(to right, transparent ${PAD + CARD_W + 8}px, rgba(8,8,11,0.6) ${PAD + CARD_W + 54}px, rgba(8,8,11,0.9) 100%)`,
               }}
             />
           </div>
@@ -229,9 +235,9 @@ function Poster({
     <div
       style={style}
       aria-hidden={!front}
-      className={`absolute inset-y-0 left-0 overflow-hidden rounded-[12px] bg-v3-raised transition-[transform,opacity] duration-[320ms] ease-out ${
+      className={`absolute left-0 overflow-hidden rounded-[12px] bg-v3-raised transition-[transform,opacity] duration-[320ms] ease-out ${
         front
-          ? 'shadow-[0_20px_44px_rgba(0,0,0,0.6)] ring-2 ring-inset ring-v3-ai'
+          ? 'shadow-[0_0_0_3px_var(--color-v3-ai),0_0_26px_var(--color-v3-ai-glow),0_18px_40px_rgba(0,0,0,0.62)]'
           : 'shadow-[0_12px_28px_rgba(0,0,0,0.5)]'
       }`}
     >
