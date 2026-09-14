@@ -35,7 +35,7 @@ export function TvCard({
   const lockupArt = lockup ? asset(item.logo) : null
 
   return (
-    <div ref={ref} className="tv-scroll-gap shrink-0" style={{ width }}>
+    <div ref={ref} className="tv-scroll-gap-row shrink-0" style={{ width }}>
       <div
         className={`relative aspect-2/3 overflow-hidden rounded-[14px] bg-tv-raised transition-transform duration-200 ${
           focused ? 'tv-focus scale-[1.08]' : ''

@@ -60,6 +60,14 @@
   scroll-margin: 30px;
 }
 
+/* A card scrolled into view on its own leaves its row's heading above the fold,
+   so you arrive at a row with no idea which one it is. The extra top margin is
+   the heading plus its gap. */
+@utility tv-scroll-gap-row {
+  scroll-margin: 30px;
+  scroll-margin-top: 84px;
+}
+
 @utility tv-no-scrollbar {
   scrollbar-width: none;
   -ms-overflow-style: none;

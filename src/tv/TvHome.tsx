@@ -111,16 +111,35 @@ export default function TvHome() {
 
   return (
     <TvStage>
-      {art ? (
-        <img key={artKey} src={art} alt="" className="absolute inset-0 size-full object-cover" />
-      ) : (
-        <div
-          className="absolute inset-0"
-          style={{ backgroundImage: `radial-gradient(90% 110% at 70% 0%, hsl(${a1} / 0.55), transparent 70%)` }}
-        />
-      )}
-      <div className="absolute inset-0 bg-[linear-gradient(97deg,var(--color-tv-ground)_2%,rgba(7,7,10,0.92)_34%,rgba(7,7,10,0.45)_62%,transparent_92%)]" />
-      <div className="absolute inset-x-0 bottom-0 h-[62%] bg-gradient-to-b from-transparent via-tv-ground/85 to-tv-ground" />
+      {/* The backdrop is card artwork — 537px wide at best — so stretching it
+          across 1280 is what made it look soft. It now occupies the right 62%,
+          which is roughly its native size, and dissolves into the page with a
+          mask rather than ending on a visible edge. */}
+      <div className="absolute inset-y-0 right-0 w-[62%] overflow-hidden">
+        {art ? (
+          <img
+            key={artKey}
+            src={art}
+            alt=""
+            className="size-full object-cover object-top"
+            style={{
+              maskImage:
+                'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.5) 22%, #000 52%), linear-gradient(to bottom, #000 46%, transparent 92%)',
+              maskComposite: 'intersect',
+              WebkitMaskImage:
+                'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.5) 22%, #000 52%), linear-gradient(to bottom, #000 46%, transparent 92%)',
+              WebkitMaskComposite: 'source-in',
+            }}
+          />
+        ) : (
+          <div
+            className="size-full"
+            style={{ backgroundImage: `radial-gradient(90% 110% at 80% 0%, hsl(${a1} / 0.5), transparent 70%)` }}
+          />
+        )}
+      </div>
+      <div className="absolute inset-0 bg-[linear-gradient(97deg,var(--color-tv-ground)_2%,rgba(7,7,10,0.88)_28%,rgba(7,7,10,0.35)_54%,transparent_86%)]" />
+      <div className="absolute inset-x-0 bottom-0 h-[58%] bg-gradient-to-b from-transparent via-tv-ground/80 to-tv-ground" />
 
       {/* the menu dims the rest rather than replacing it, so you keep your place */}
       <div
