@@ -2,6 +2,7 @@ import { createPortal } from 'react-dom'
 import mark from '../assets/antena-mark.svg'
 import { IconSparkle } from './icons'
 import { SearchPanel } from './SearchPanel'
+import { Sparks } from './Sparks'
 import type { SmartSearch } from './useSmartSearch'
 
 const SECTIONS = ['Emisiuni', 'Seriale', 'Filme', 'Genuri']
@@ -107,10 +108,14 @@ function SearchField({ s }: { s: SmartSearch }) {
 
   return (
     <div
-      className={`flex h-[56px] min-w-0 flex-1 items-center gap-[12px] rounded-[100px] px-[24px] transition-[background-color,box-shadow] duration-400 ${
+      className={`relative flex h-[56px] min-w-0 flex-1 items-center gap-[12px] rounded-[100px] px-[24px] transition-[background-color,box-shadow] duration-400 ${
         open ? 'v3-ai-ring' : 'bg-white/6 hover:bg-white/10'
       }`}
     >
+      {/* Only while it has the field: motes drifting around a control nobody
+          is using is decoration, and the same motes around one that is waiting
+          on you are the thing telling you it is. */}
+      {open && <Sparks className="overflow-hidden rounded-[100px]" />}
       <IconSparkle className={`size-[20px] shrink-0 text-v3-fg ${thinking ? 'v3-thinking' : ''}`} />
       <input
         ref={inputRef}

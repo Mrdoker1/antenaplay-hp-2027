@@ -56,17 +56,84 @@
   backdrop-filter: blur(25px);
 }
 
-/* The search field once the assistant has focus. Figma 12:1866 draws a flat
-   ring; here it is a gradient that runs from the brand red into the AI violet,
-   so the field belongs to both the platform and the feature. The two-background
-   trick is what lets a gradient live in a border. */
+/* The assistant's edge, and the one piece of motion the whole skin turns on.
+   Figma 12:1866 draws a flat ring; here it is a gradient that runs from the
+   brand red into the AI violet, so the surface belongs to both the platform
+   and the feature — and it turns, slowly, because a thing that is listening
+   should not look switched off.
+
+   The angle is a registered custom property, which is the only way an angle
+   can be animated at all: a plain --var is a string to the interpolator and
+   snaps between keyframes. Where @property is unsupported the gradient simply
+   sits still, which is the old design. */
+@property --v3-spin {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes v3-spin {
+  to {
+    --v3-spin: 360deg;
+  }
+}
+
+/* The two-background trick is what lets a gradient live in a border. */
 @utility v3-ai-ring {
   border: 2px solid transparent;
   background:
     linear-gradient(var(--color-v3-panel), var(--color-v3-panel)) padding-box,
-    linear-gradient(96deg, var(--color-v3-action) 0%, var(--color-v3-ai) 62%, #d38bff 100%)
+    conic-gradient(
+        from var(--v3-spin),
+        var(--color-v3-action) 0%,
+        var(--color-v3-ai) 26%,
+        #d38bff 44%,
+        var(--color-v3-ai) 62%,
+        var(--color-v3-action) 100%
+      )
       border-box;
   box-shadow: 0 0 38px var(--color-v3-ai-glow);
+  animation: v3-spin 7s linear infinite;
+}
+
+/* The same edge as a layer behind something opaque: only the few pixels it is
+   inset by show, so it reads as a border on a box that cannot have one. */
+@utility v3-ai-edge {
+  background: conic-gradient(
+    from var(--v3-spin),
+    var(--color-v3-action) 0%,
+    var(--color-v3-ai) 26%,
+    #d38bff 44%,
+    var(--color-v3-ai) 62%,
+    var(--color-v3-action) 100%
+  );
+  box-shadow: 0 0 26px var(--color-v3-ai-glow);
+  animation: v3-spin 5.5s linear infinite;
+}
+
+/* Sparks. The assistant's one ambient signal: a handful of motes drifting off
+   whatever it is working on. Each carries its own drift, duration and delay as
+   custom properties, so one keyframe set serves every one of them and no two
+   are in step. */
+@keyframes v3-spark {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scale(0.5);
+  }
+  18% {
+    opacity: 1;
+  }
+  72% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--v3-dx), var(--v3-dy), 0) scale(1.15);
+  }
+}
+
+@utility v3-spark {
+  animation: v3-spark var(--v3-dur) ease-out var(--v3-delay) infinite;
 }
 
 @utility v3-no-scrollbar {

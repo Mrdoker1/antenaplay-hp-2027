@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { asset } from '../lib/assets'
 import { IconSparkle } from './icons'
+import { Sparks } from './Sparks'
 import { taste, tasteDeck, type TasteCard } from './search'
 import type { SmartSearch } from './useSmartSearch'
 
@@ -235,19 +236,31 @@ function Poster({
     <div
       style={style}
       aria-hidden={!front}
-      className={`absolute left-0 overflow-hidden rounded-[12px] bg-v3-raised transition-[transform,opacity] duration-[320ms] ease-out ${
-        front
-          ? 'shadow-[0_0_0_3px_var(--color-v3-ai),0_0_26px_var(--color-v3-ai-glow),0_18px_40px_rgba(0,0,0,0.62)]'
-          : 'shadow-[0_12px_28px_rgba(0,0,0,0.5)]'
+      className={`absolute left-0 transition-[transform,opacity] duration-[320ms] ease-out ${
+        front ? 'drop-shadow-[0_18px_34px_rgba(0,0,0,0.62)]' : ''
       }`}
     >
-      {art && <img src={art} alt="" draggable={false} className="size-full object-cover" />}
-      {front && (
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-[10px] pt-[36px]">
-          <p className="truncate text-[13px]/[18px] font-bold">{card.title}</p>
-          <p className="truncate text-[11px]/[16px] text-v3-dim">{card.vibe}</p>
-        </div>
-      )}
+      {/* The edge is a layer behind the card rather than a ring on it: the
+          card is opaque and clips its own artwork, so a gradient painted
+          under it shows only where it sticks out. */}
+      {front && <span className="v3-ai-edge absolute -inset-[3px] rounded-[15px]" />}
+
+      <div
+        className={`absolute inset-0 overflow-hidden rounded-[12px] bg-v3-raised ${
+          front ? '' : 'shadow-[0_12px_28px_rgba(0,0,0,0.5)]'
+        }`}
+      >
+        {art && <img src={art} alt="" draggable={false} className="size-full object-cover" />}
+        {front && (
+          <>
+            <Sparks />
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-[10px] pt-[36px]">
+              <p className="truncate text-[13px]/[18px] font-bold">{card.title}</p>
+              <p className="truncate text-[11px]/[16px] text-v3-dim">{card.vibe}</p>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   )
 }
