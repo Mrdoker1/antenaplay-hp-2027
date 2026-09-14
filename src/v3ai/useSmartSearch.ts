@@ -22,6 +22,10 @@ export type SmartSearch = {
   expanded: boolean
   setExpanded: (v: boolean) => void
   commit: () => void
+  /** Run a phrase the viewer did not type — the taste tuner's swipes, turned
+   *  into words. `commit` cannot do this: it reads the live input, which has
+   *  not re-rendered yet in the same handler that set the query. */
+  ask: (phrase: string) => void
   thinking: boolean
   open: boolean
   setOpen: (v: boolean) => void
@@ -84,6 +88,15 @@ export function useSmartSearch(): SmartSearch {
     setOpen(false)
   }, [])
 
+  const ask = useCallback((phrase: string) => {
+    const q = phrase.trim()
+    if (!q) return
+    setQuery(q)
+    setSettled(q)
+    setExpanded(true)
+    setOpen(false)
+  }, [])
+
   return {
     query,
     setQuery,
@@ -97,6 +110,7 @@ export function useSmartSearch(): SmartSearch {
     expanded,
     setExpanded,
     commit,
+    ask,
     pick,
     inputRef,
   }

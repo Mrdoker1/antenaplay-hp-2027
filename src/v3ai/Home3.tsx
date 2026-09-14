@@ -10,6 +10,7 @@ import { HeaderBar } from './HeaderBar'
 import { Hero3 } from './Hero3'
 import { LeftRail } from './LeftRail'
 import { SearchResults } from './SearchResults'
+import { TasteTuner } from './TasteTuner'
 import { useSmartSearch } from './useSmartSearch'
 
 /** AntenaPLAY home page — 2027 · AI.
@@ -27,6 +28,7 @@ import { useSmartSearch } from './useSmartSearch'
  *  stays this skin's. */
 export default function Home3() {
   const [section, setSection] = useState('home')
+  const [tuner, setTuner] = useState(true)
   const smart = useSmartSearch()
 
   useEffect(() => {
@@ -59,6 +61,12 @@ export default function Home3() {
       ) : (
         <main className="pb-[20px]">
           <Hero3 />
+
+          {/* Above the first shelf, because it is the thing this skin has that
+              the other two do not, and below the hero, because nobody should
+              have to answer anything before they are allowed to see the
+              catalogue. Closing it is a real option for the same reason. */}
+          {tuner && <TasteTuner s={smart} onClose={() => setTuner(false)} />}
 
           <div className="v2027 bg-transparent ps-[var(--v3-rail)]">
             <Row title="Continuă de unde ai rămas" itemPitch={248} seeAll={false}>

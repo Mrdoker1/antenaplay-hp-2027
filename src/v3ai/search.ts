@@ -26,6 +26,7 @@
  *  interaction, the latency and the result surface are real, and swapping in an
  *  embedding call later touches this file only. */
 
+import { asset } from '../lib/assets'
 import { canaleGratuite, canaleTv } from '../data/channels'
 import { films } from '../data/films'
 import { liveEvents } from '../data/liveEvents'
@@ -80,7 +81,7 @@ const VOCAB: Record<string, string[]> = {
   horror: ['horror', 'scary', 'frightening', 'creepy', 'terrifying', 'groaza', 'infricosator', 'frica'],
   crime: ['crime', 'criminal', 'heist', 'gangster', 'mafia', 'crima', 'jaf', 'politist'],
   detective: ['detective', 'mystery', 'whodunit', 'investigation', 'detectiv', 'mister', 'ancheta'],
-  scifi: ['scifi', 'science', 'fiction', 'space', 'futuristic', 'cyberpunk', 'robots', 'spatiu', 'viitor', 'roboti', 'stiintifico'],
+  scifi: ['scifi', 'sf', 'science', 'fiction', 'space', 'futuristic', 'cyberpunk', 'robots', 'spatiu', 'viitor', 'roboti', 'stiintifico'],
   fantasy: ['fantasy', 'magic', 'magical', 'wizards', 'dragons', 'mythology', 'myth', 'fantezie', 'magie', 'mitologie', 'dragoni'],
   romance: ['romance', 'romantic', 'love', 'couples', 'dragoste', 'iubire', 'iubirii', 'cupluri'],
   family: ['family', 'kids', 'children', 'child', 'familie', 'copii', 'copil'],
@@ -705,3 +706,153 @@ export const SUGGESTIONS = [
   'sport în direct',
   'o seară în familie',
 ]
+
+/* ── taste ────────────────────────────────────────────────────────────────
+   The phrase is one way in, and it asks the viewer to already know what they
+   are in the mood for. Swiping is the other: shown a poster, anyone can say
+   yes or no, and a handful of those answers is a phrase they never had to
+   compose. Both ends meet in the same vocabulary, so a swipe and a typed word
+   are worth exactly the same to the index.                                  */
+
+export type TasteCard = {
+  key: string
+  title: string
+  year?: number
+  /** key for src/lib/assets — always resolvable, the deck filters on it */
+  art: string
+  vibe: string
+  tags: string[]
+  moods: string[]
+}
+
+/** The word to put in a generated phrase for a tag.
+ *
+ *  Not TAG_LABEL: that is display Romanian and some of it — "SF", "Nou" — is
+ *  not in the vocabulary the parser reads, so a phrase built from labels would
+ *  lose signals on the way back in. These are all words VOCAB knows. */
+const TAG_PHRASE: Record<string, string> = {
+  action: 'acțiune',
+  adventure: 'aventură',
+  comedy: 'comedie',
+  drama: 'dramă',
+  thriller: 'thriller',
+  horror: 'groază',
+  crime: 'crimă',
+  detective: 'mister',
+  scifi: 'sf',
+  fantasy: 'fantezie',
+  romance: 'dragoste',
+  family: 'familie',
+  animation: 'animație',
+  history: 'istorie',
+  war: 'război',
+  biography: 'biografie',
+  sport: 'sport',
+  musical: 'muzical',
+  western: 'western',
+  documentary: 'documentar',
+  reality: 'reality',
+  series: 'serial',
+  local: 'românesc',
+  fresh: 'nou',
+}
+
+const MOOD_PHRASE: Record<string, string> = {
+  autumn: 'toamnă',
+  cosy: 'confortabil',
+  feelgood: 'vesel',
+  mindbending: 'răsturnare',
+  epic: 'grandios',
+  dark: 'întunecat',
+}
+
+/** The deck.
+ *
+ *  Real catalogue entries, not a curated demo list — the whole claim is that
+ *  the swipes feed the same index the phrase does. Dealt one genre at a time
+ *  so consecutive cards disagree with each other: a run of five thrillers
+ *  teaches the profile nothing it did not already know after the first. */
+export function tasteDeck(limit = 14): TasteCard[] {
+  const byGenre = new Map<string, TasteCard[]>()
+
+  for (const e of INDEX) {
+    if (e.kind !== 'film' || !e.art || !asset(e.art)) continue
+    const genre = e.tags.find((t) => t !== 'film')
+    if (!genre) continue
+    const card: TasteCard = {
+      key: e.key,
+      title: e.title,
+      year: e.year,
+      art: e.art,
+      vibe: e.vibe,
+      tags: e.tags,
+      moods: e.moods,
+    }
+    const bucket = byGenre.get(genre)
+    if (bucket) bucket.push(card)
+    else byGenre.set(genre, [card])
+  }
+
+  // rarest genres first, so the spread leads with what actually distinguishes
+  const groups = [...byGenre.entries()]
+    .sort((a, b) => (TAG_WEIGHT[b[0]] ?? 0) - (TAG_WEIGHT[a[0]] ?? 0))
+    .map(([, cards]) => cards)
+
+  const out: TasteCard[] = []
+  for (let round = 0; out.length < limit; round++) {
+    let dealt = false
+    for (const group of groups) {
+      const card = group[round]
+      if (!card) continue
+      out.push(card)
+      dealt = true
+      if (out.length >= limit) break
+    }
+    if (!dealt) break
+  }
+  return out
+}
+
+export type Taste = {
+  /** what it learned, in the interface's language */
+  labels: string[]
+  /** the same thing as a phrase the search can be run with */
+  phrase: string
+}
+
+/** What a set of swipes adds up to.
+ *
+ *  A no is worth less than a yes — deliberately. Rejecting a poster says far
+ *  less than accepting one (you can dislike a film for its cast), so counting
+ *  them equally lets two bored passes cancel a real preference. Weighted by
+ *  the same inverse-frequency term the search uses, so a tag half the
+ *  catalogue carries cannot outrank one that actually narrows. */
+export function taste(liked: TasteCard[], passed: TasteCard[], limit = 4): Taste {
+  const tags: Record<string, number> = {}
+  const moods: Record<string, number> = {}
+  for (const card of liked) {
+    for (const t of card.tags) tags[t] = (tags[t] ?? 0) + 1
+    for (const m of card.moods) moods[m] = (moods[m] ?? 0) + 1
+  }
+  for (const card of passed) {
+    for (const t of card.tags) tags[t] = (tags[t] ?? 0) - 0.6
+    for (const m of card.moods) moods[m] = (moods[m] ?? 0) - 0.6
+  }
+
+  const top = Object.entries(tags)
+    .filter(([tag, n]) => n > 0 && TAG_PHRASE[tag])
+    .sort((a, b) => b[1] * (TAG_WEIGHT[b[0]] ?? 1) - a[1] * (TAG_WEIGHT[a[0]] ?? 1))
+    .slice(0, limit)
+    .map(([tag]) => tag)
+
+  const mood = Object.entries(moods)
+    .filter(([name, n]) => n > 0 && MOOD_PHRASE[name])
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 1)
+    .map(([name]) => name)
+
+  return {
+    labels: [...mood.map((m) => MOOD_LABEL[m]), ...top.map((t) => TAG_LABEL[t])].filter(Boolean),
+    phrase: [...mood.map((m) => MOOD_PHRASE[m]), ...top.map((t) => TAG_PHRASE[t])].join(' '),
+  }
+}
