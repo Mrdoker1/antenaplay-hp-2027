@@ -50,15 +50,17 @@ export function TvLiveScreen({ active, onOpenMenu }: { active: boolean; onOpenMe
           Live
         </h1>
 
-        {/* what is on, on the channel you are standing on */}
-        <div className="mt-[16px] flex items-center gap-[22px]">
-          {/* no plate behind the mark — a box drawn round a logo that is
-              already light reads as a second, crooked frame */}
+        {/* What is on, on the channel you are standing on.
+            The marks are cropped to their ink (scripts/trim-channel-logos),
+            so the box is driven by height with the width left to follow: the
+            mark is as large as the line allows and there is nothing padding
+            it out to one side. */}
+        <div className="mt-[18px] flex items-center gap-[22px]">
           {logo && (
             <img
               src={logo}
               alt=""
-              className="h-[64px] w-[172px] shrink-0 object-contain object-left drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)]"
+              className="h-[62px] w-auto max-w-[190px] shrink-0 object-contain drop-shadow-[0_2px_12px_rgba(0,0,0,0.75)]"
             />
           )}
           <div className="min-w-0 flex-1">
@@ -68,8 +70,8 @@ export function TvLiveScreen({ active, onOpenMenu }: { active: boolean; onOpenMe
               </span>
               Acum în direct
             </p>
-            <p className="mt-[4px] truncate text-[30px]/[36px] font-bold">{now.title}</p>
-            <div className="mt-[10px] flex items-center gap-[14px]">
+            <p className="mt-[4px] truncate text-[32px]/[38px] font-bold">{now.title}</p>
+            <div className="mt-[12px] flex items-center gap-[14px]">
               <span className="h-[6px] w-[320px] overflow-hidden rounded-full bg-white/15">
                 <span
                   className="block h-full rounded-full bg-tv-action"

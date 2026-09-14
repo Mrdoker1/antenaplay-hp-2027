@@ -75,6 +75,16 @@ const LIVE_STANDIN = ['6RYPPLbmTok', 'jvhWbe3fAbs', 'ujyPsd4XN3Y']
  *  the feed waits for focus to settle. */
 const DWELL_MS = 900
 
+/** How the feed dissolves into the page — both edges, and applied to every
+ *  layer inside the backdrop box so none of them ends on the clip.
+ *
+ *  The bottom stop is not cosmetic: a player is composited, so it paints over
+ *  the rails whatever the stacking order says. It has to be gone by the top of
+ *  the rail box (396 of 720, so 45%) or it dims the first row's heading. */
+const FEED_FADE =
+  'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.3) 24%, #000 60%), ' +
+  'linear-gradient(to bottom, #000 20%, transparent 44%)'
+
 const PLACEHOLDER = '1428dec7d5b66b0e09260d862db7ea5e0519cf4f'
 /** Row 0 is the hero's own actions; the rails follow. */
 const HERO_ACTIONS = 2
@@ -183,6 +193,10 @@ export default function TvHome() {
      hover to discover it with. */
   const universe = focus.row > 0 && !channel ? franchiseFor(item.title) : null
 
+  /* The cover over the sliced row only earns its place once something has
+     actually scrolled past — at the top of the list it would dim the first
+     heading for nothing. */
+  const [scrolled, setScrolled] = useState(false)
   const [rested, setRested] = useState<string | null>(null)
   useEffect(() => {
     const name = channel?.name
@@ -225,11 +239,18 @@ export default function TvHome() {
         <div className="absolute inset-y-0 right-0 w-[62%] overflow-hidden">
           {feed ? (
             <div className="relative size-full overflow-hidden">
-              {/* the fed colour stays underneath, so the channel keeps its own
-                  hue while the player boots */}
+              {/* The fed colour stays underneath, so the channel keeps its own
+                  hue while the player boots — and it carries the same fade, or
+                  it ends on the clip edge as a visible band beside the feed. */}
               <div
                 className="absolute inset-0"
-                style={{ backgroundImage: `radial-gradient(90% 110% at 80% 0%, hsl(${a1} / 0.5), transparent 70%)` }}
+                style={{
+                  backgroundImage: `radial-gradient(90% 110% at 80% 0%, hsl(${a1} / 0.5), transparent 70%)`,
+                  maskImage: FEED_FADE,
+                  maskComposite: 'intersect',
+                  WebkitMaskImage: FEED_FADE,
+                  WebkitMaskComposite: 'source-in',
+                }}
               />
               {/* A 16:9 player in a box this tall letterboxes, so the frame is
                   sized wider than the box and centred — the video covers and the
@@ -241,7 +262,7 @@ export default function TvHome() {
                 id={feed}
                 muted
                 scale={1.8}
-                fade="linear-gradient(to right, transparent 0%, rgba(0,0,0,0.3) 24%, #000 60%), linear-gradient(to bottom, #000 34%, transparent 76%)"
+                fade={FEED_FADE}
               />
             </div>
           ) : art ? (
@@ -280,7 +301,7 @@ export default function TvHome() {
             <img
               src={channelLogo}
               alt=""
-              className="h-[52px] w-[150px] object-contain object-right drop-shadow-[0_2px_14px_rgba(0,0,0,0.8)]"
+              className="h-[58px] w-auto max-w-[200px] object-contain object-right drop-shadow-[0_2px_14px_rgba(0,0,0,0.8)]"
             />
           </div>
         )}
@@ -290,7 +311,7 @@ export default function TvHome() {
           style={{
             paddingLeft: 'calc(var(--tv-rail) + var(--tv-safe))',
             paddingRight: 'var(--tv-safe)',
-            top: 76,
+            top: 48,
           }}
         >
           <div className="max-w-[620px]">
@@ -300,7 +321,7 @@ export default function TvHome() {
             <h1 className="mt-[10px] line-clamp-2 text-[50px]/[54px] font-black tracking-[-0.03em]">
               {tidyTitle(channel ? channel.name : item.title)}
             </h1>
-            <p className="mt-[12px] flex items-center gap-[10px] font-meta text-[20px]/[26px] uppercase tracking-[0.1em] text-tv-dim">
+            <p className="mt-[10px] flex items-center gap-[10px] font-meta text-[20px]/[26px] uppercase tracking-[0.1em] text-tv-dim">
               {channel?.badge === 'live' && (
                 <span className="flex items-center gap-[7px] rounded-[6px] bg-tv-action px-[9px] py-[2px] text-[16px]/[22px] text-tv-fg">
                   <span className="size-[7px] rounded-full bg-white" />
@@ -309,33 +330,37 @@ export default function TvHome() {
               )}
               {channel ? channel.now : item.meta}
             </p>
+          </div>
+
+          {/* The universe hint belongs with the actions, because it is one: OK
+              on this card opens the hub. On its own line above the buttons it
+              wrapped to two and pushed them down behind the rails. */}
+          <div className="mt-[18px] flex items-center gap-[22px]">
+            <span
+              className={`flex items-center gap-[10px] rounded-full bg-tv-action px-[22px] py-[10px] text-[21px]/[26px] font-bold transition-transform duration-200 ${
+                focus.row === 0 && focus.col === 0 ? 'tv-focus scale-[1.04]' : ''
+              }`}
+            >
+              <PlayGlyph className="size-[20px]" />
+              {channel ? 'Intră' : 'Redă'}
+            </span>
+            <span
+              className={`flex items-center gap-[10px] rounded-full bg-white/12 px-[22px] py-[10px] text-[21px]/[26px] font-semibold transition-transform duration-200 ${
+                focus.row === 0 && focus.col === 1 ? 'tv-focus-ai scale-[1.04]' : ''
+              }`}
+            >
+              <Sparkle className="size-[22px] text-tv-fg" />
+              Caută cu vocea
+            </span>
+
             {universe && (
-              <p className="mt-[12px] flex w-fit items-center gap-[10px] rounded-full bg-white/10 py-[6px] pe-[16px] ps-[8px] font-meta text-[17px]/[22px] uppercase tracking-[0.1em] text-tv-fg/85">
-                <span className="rounded-full bg-tv-fg px-[10px] py-[2px] text-[15px]/[20px] font-bold text-tv-ground">
+              <p className="flex items-center gap-[9px] whitespace-nowrap rounded-full bg-white/10 py-[5px] pe-[15px] ps-[6px] font-meta text-[17px]/[22px] uppercase tracking-[0.1em] text-tv-fg/85">
+                <span className="rounded-full bg-tv-fg px-[9px] py-[1px] text-[15px]/[20px] font-bold text-tv-ground">
                   OK
                 </span>
-                Universul {universe.name}  ·  {titleCount(universe.total)}
+                {titleCount(universe.total)} în univers
               </p>
             )}
-
-            <div className={`flex items-center gap-[22px] ${universe ? 'mt-[14px]' : 'mt-[18px]'}`}>
-              <span
-                className={`flex items-center gap-[10px] rounded-full bg-tv-action px-[22px] py-[10px] text-[21px]/[26px] font-bold transition-transform duration-200 ${
-                  focus.row === 0 && focus.col === 0 ? 'tv-focus scale-[1.04]' : ''
-                }`}
-              >
-                <PlayGlyph className="size-[20px]" />
-                {channel ? 'Intră' : 'Redă'}
-              </span>
-              <span
-                className={`flex items-center gap-[10px] rounded-full bg-white/12 px-[22px] py-[10px] text-[21px]/[26px] font-semibold transition-transform duration-200 ${
-                  focus.row === 0 && focus.col === 1 ? 'tv-focus-ai scale-[1.04]' : ''
-                }`}
-              >
-                <Sparkle className="size-[22px] text-tv-fg" />
-                Caută cu vocea
-              </span>
-            </div>
           </div>
         </div>
 
@@ -343,9 +368,22 @@ export default function TvHome() {
             The padding is what keeps a focused card's ring and lift from being
             clipped: overflow cuts at the padding box, so the room has to be
             padding rather than margin. */}
-        <div className="absolute inset-x-0 bottom-0" style={{ height: 360 }}>
+        {/* The logo used to sit above the hero; without it the whole column
+            starts higher, and the rails take the room that frees. */}
+        <div className="absolute inset-x-0 bottom-0" style={{ height: 396 }}>
+          {/* The row above the focused one is sliced by the scrollport, and the
+              slice — a strip of card bottoms and their progress bars — lands
+              right under the hero's buttons. Measured: the slice ends 37px in
+              and the next heading starts at 67, so the cover stays solid to 40
+              and is gone before the heading. */}
+          <div
+            className={`pointer-events-none absolute inset-x-0 top-0 z-10 h-[62px] bg-[linear-gradient(to_bottom,var(--color-tv-ground)_0%,var(--color-tv-ground)_64%,transparent_100%)] transition-opacity duration-200 ${
+              scrolled ? 'opacity-100' : 'opacity-0'
+            }`}
+          />
           <div
             className="tv-no-scrollbar h-full overflow-y-auto py-[30px]"
+            onScroll={(e) => setScrolled(e.currentTarget.scrollTop > 4)}
             style={{
               paddingLeft: 'calc(var(--tv-rail) + var(--tv-safe) - 26px)',
               paddingRight: 'calc(var(--tv-safe) - 26px)',

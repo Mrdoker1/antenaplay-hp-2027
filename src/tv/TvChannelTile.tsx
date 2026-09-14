@@ -17,7 +17,9 @@ import type { ChannelItem } from '../v2027/catalog'
  *
  *  The mark sits on the frame with no plate behind it. A dark square around a
  *  logo that is already light reads as a second, crooked box inside the card;
- *  a drop shadow does the same legibility job without drawing an edge. */
+ *  a drop shadow does the same legibility job without drawing an edge. The box
+ *  is sized by height with the width left to follow, because the marks are
+ *  cropped to their ink — so each one is as large as the corner allows. */
 export function TvChannelTile({
   channel,
   focused,
@@ -54,7 +56,7 @@ export function TvChannelTile({
             alt={channel.name}
             loading="lazy"
             decoding="async"
-            className={`absolute right-[14px] top-[14px] h-[44px] w-[84px] object-contain object-right drop-shadow-[0_2px_10px_rgba(0,0,0,0.75)] transition-opacity duration-200 ${
+            className={`absolute right-[12px] top-[12px] h-[38px] w-auto max-w-[104px] object-contain object-right drop-shadow-[0_2px_10px_rgba(0,0,0,0.75)] transition-opacity duration-200 ${
               focused ? 'opacity-100' : 'opacity-80'
             }`}
           />
