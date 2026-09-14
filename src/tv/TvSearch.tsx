@@ -137,7 +137,9 @@ export function TvSearch({ onClose }: { onClose: () => void }) {
             : 'Apasă microfonul și spune ce cauți, sau alege o sugestie.'}
         </p>
 
-        <div className="mt-[26px] flex items-center gap-[14px]">
+        {/* padding, not margin: overflow clips at the padding box, so this is
+            what keeps a focused pill's ring from being cut */}
+        <div className="tv-no-scrollbar -mx-[16px] -my-[14px] mt-[12px] flex items-center gap-[14px] overflow-x-auto px-[16px] py-[14px]">
           <Pill focused={focus.row === 0 && focus.col === 0} tone="ai">
             <span className="flex items-center gap-[12px]">
               <Microphone className="size-[26px]" />
@@ -151,9 +153,9 @@ export function TvSearch({ onClose }: { onClose: () => void }) {
           ))}
         </div>
 
-        <div className="mt-[34px] min-h-0 flex-1">
+        <div className="mt-[20px] min-h-0 flex-1">
           {hits.length ? (
-            <div className="tv-no-scrollbar flex gap-[18px] overflow-x-auto pt-[10px]">
+            <div className="tv-no-scrollbar -mx-[16px] flex gap-[18px] overflow-x-auto px-[16px] py-[16px]">
               {hits.map((hit, i) => (
                 <Result key={hit.title} hit={hit} focused={focus.row === 1 && focus.col === i} />
               ))}
@@ -185,9 +187,16 @@ function Pill({
   focused: boolean
   tone?: 'ai'
 }) {
+  const ref = useRef<HTMLSpanElement>(null)
+
+  useEffect(() => {
+    if (focused) ref.current?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' })
+  }, [focused])
+
   return (
     <span
-      className={`rounded-full px-[24px] py-[12px] text-[22px]/[28px] font-semibold transition-transform duration-200 ${
+      ref={ref}
+      className={`shrink-0 whitespace-nowrap rounded-full px-[22px] py-[11px] text-[22px]/[28px] font-semibold transition-transform duration-200 ${
         tone === 'ai' ? 'bg-tv-ai/20 text-tv-fg' : 'bg-white/10 text-tv-fg'
       } ${focused ? (tone === 'ai' ? 'tv-focus-ai scale-[1.05]' : 'tv-focus scale-[1.05]') : ''}`}
     >
