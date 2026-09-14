@@ -5,14 +5,16 @@ import type { Item } from '../v2027/catalog'
 
 const PLACEHOLDER = '1428dec7d5b66b0e09260d862db7ea5e0519cf4f'
 
-/** A wide card with its title underneath — the shape AntenaPLAY's own TV app
- *  uses for its section pages, and the right one there: a grid you scan
- *  deliberately needs its labels, unlike a home rail where the hero above is
- *  already naming whatever is focused. */
+/** A poster with its title underneath, for the section pages.
+ *
+ *  2:3, like everything else in this catalogue — the artwork is portrait, and a
+ *  16:9 crop of it threw away most of the frame. The caption stays: a grid you
+ *  scan deliberately needs its labels, unlike a home rail where the hero above
+ *  is already naming whatever is focused. */
 export function TvGridCard({
   item,
   focused,
-  width = 236,
+  width = 168,
 }: {
   item: Item
   focused: boolean
@@ -28,9 +30,9 @@ export function TvGridCard({
   }, [focused])
 
   return (
-    <div ref={ref} className="tv-scroll-gap-row shrink-0" style={{ width }}>
+    <div ref={ref} className="tv-scroll-gap shrink-0" style={{ width }}>
       <div
-        className={`relative aspect-video overflow-hidden rounded-[12px] bg-tv-raised transition-transform duration-200 ${
+        className={`relative aspect-2/3 overflow-hidden rounded-[12px] bg-tv-raised transition-transform duration-200 ${
           focused ? 'tv-focus scale-[1.05]' : ''
         }`}
       >
@@ -40,7 +42,9 @@ export function TvGridCard({
             alt=""
             loading="lazy"
             decoding="async"
-            className={`size-full object-cover object-top ${focused ? '' : 'brightness-[0.74]'}`}
+            className={`size-full object-cover ${key && /^[0-9a-f]{40}$/.test(key) ? 'object-top' : 'object-[center_32%]'} ${
+              focused ? '' : 'brightness-[0.74]'
+            }`}
           />
         ) : (
           <div
@@ -52,7 +56,7 @@ export function TvGridCard({
         )}
       </div>
       <p
-        className={`mt-[10px] line-clamp-2 text-[20px]/[26px] font-semibold transition-colors ${
+        className={`mt-[10px] line-clamp-2 h-[52px] text-[20px]/[26px] font-semibold transition-colors ${
           focused ? 'text-tv-fg' : 'text-tv-dim'
         }`}
       >

@@ -176,9 +176,12 @@ titles under them. The filters narrow by something the catalogue actually knows;
 a chip that filtered nothing would be worse than no chip. Home opens on a
 `Canale TV` rail of channel logos, as theirs does.
 
-Wide cards with captions on a section page and caption-less posters on the home
-rails is deliberate: a grid you scan needs its labels, while a home rail has a
-hero above it already naming whatever is focused.
+Section pages keep their title and filters pinned while only the grid scrolls —
+scrolled away, they take with them the two things you most need on a page you
+are scanning: where you are, and how to narrow it. The cards are 2:3 like
+everything else in the catalogue; they carry a caption, which the home rails do
+not, because a grid you scan needs its labels while a home rail has a hero above
+it already naming whatever is focused.
 
 `useTvNav` owns the remote, and only one surface holds it at a time — the home
 screen stops listening while the search overlay is open, or a single press lands
