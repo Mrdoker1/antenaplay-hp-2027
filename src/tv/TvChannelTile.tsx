@@ -50,7 +50,11 @@ export function TvChannelTile({
       style={{ width }}
     >
       <div
-        className={`relative aspect-video overflow-hidden rounded-[14px] transition-transform duration-200 ${
+        /* 16:10, not 16:9. A corner mark, a programme title and a time do not
+           fit in 138px with any air between them — at 16:9 the plate's bottom
+           edge was 11px *below* the title's line box, which is what "the logo
+           runs into the text" looks like when you measure it. */
+        className={`relative aspect-[16/10] overflow-hidden rounded-[14px] transition-transform duration-200 ${
           focused ? 'tv-focus scale-[1.06]' : ''
         }`}
         style={{
@@ -66,7 +70,7 @@ export function TvChannelTile({
             alt={channel.name}
             loading="lazy"
             decoding="async"
-            className={`absolute right-[14px] top-[14px] size-[66px] rounded-[14px] bg-black/45 object-contain p-[14px] transition-opacity duration-200 ${
+            className={`absolute right-[14px] top-[14px] size-[62px] rounded-[14px] bg-black/45 object-contain p-[12px] transition-opacity duration-200 ${
               focused ? 'opacity-100' : 'opacity-80'
             }`}
           />
