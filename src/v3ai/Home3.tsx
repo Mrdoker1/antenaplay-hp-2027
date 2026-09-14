@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
-import { rows } from '../v2027/catalog'
+import { channelsFree, channelsTv, rows } from '../v2027/catalog'
+import { ChannelTile } from '../v2027/ChannelTile'
+import { LiveRow2027 } from '../v2027/LiveRow2027'
 import { Row } from '../v2027/Row'
 import { TitleCard } from '../v2027/TitleCard'
 import { TopTen2027 } from '../v2027/TopTen2027'
@@ -57,6 +59,19 @@ export default function Home3() {
             ))}
           </Row>
 
+          {/* Live and the channel wall stay on the first screen. The ordering
+              principle is "what we are offering, then what is trending" — and
+              for a broadcaster what is on air right now is the offer. Pushing
+              it below Top 10 would hand the one thing Netflix cannot copy to
+              the bottom of the page. */}
+          <LiveRow2027 />
+
+          <Row title="Canale TV" itemPitch={302}>
+            {channelsTv.map((channel, i) => (
+              <ChannelTile key={`${channel.name}-${i}`} channel={channel} />
+            ))}
+          </Row>
+
           <Row title="Trending în AntenaPLAY" itemPitch={248}>
             {rows.trending.map((item, i) => (
               <TitleCard key={`${item.title}-${i}`} item={item} />
@@ -108,6 +123,18 @@ export default function Home3() {
           <Row title="Power Couple România" itemPitch={248}>
             {rows.powerCouple.map((item, i) => (
               <TitleCard key={`${item.title}-${i}`} item={item} />
+            ))}
+          </Row>
+
+          <Row title="Top show-uri TV" itemPitch={248}>
+            {rows.topShowuri.map((item, i) => (
+              <TitleCard key={`${item.title}-${i}`} item={item} />
+            ))}
+          </Row>
+
+          <Row title="Canale gratuite" itemPitch={302}>
+            {channelsFree.map((channel, i) => (
+              <ChannelTile key={`${channel.name}-${i}`} channel={channel} />
             ))}
           </Row>
         </div>

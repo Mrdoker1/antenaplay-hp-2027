@@ -84,6 +84,11 @@ export function Nav2027({
           >
             Autentifică-te
           </a>
+          {/* the paying path has to exist for someone who is not a subscriber
+              yet — "log in" is the only door today, and it is the wrong one */}
+          <a href="#" className="rounded-full px-[14px] py-[9px] text-[13px]/[16px] font-semibold text-fg-muted transition-colors hover:text-fg">
+            Vezi abonamente
+          </a>
         </div>
       </div>
     </header>

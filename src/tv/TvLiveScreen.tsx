@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
-import { canaleTv } from '../data/channels'
+import { channelsTv } from '../v2027/catalog'
 import { liveEvents } from '../data/liveEvents'
 import { asset } from '../lib/assets'
 import { PlayGlyph } from '../v2027/PlayGlyph'
+import { TvChannelTile } from './TvChannelTile'
 import { useTvNav } from './useTvNav'
 
 /** What is on right now.
@@ -25,7 +26,7 @@ const NOW = [
 ]
 
 export function TvLiveScreen({ active, onOpenMenu }: { active: boolean; onOpenMenu: () => void }) {
-  const channels = useMemo(() => canaleTv.filter((c) => c.logo).slice(0, 10), [])
+  const channels = useMemo(() => channelsTv.filter((c) => c.logo).slice(0, 10), [])
   const lengths = useMemo(() => [channels.length, liveEvents.length], [channels.length])
 
   const { focus } = useTvNav(lengths, undefined, active, (dir) => {
@@ -91,23 +92,11 @@ export function TvLiveScreen({ active, onOpenMenu }: { active: boolean; onOpenMe
           <div className="tv-no-scrollbar -my-[16px] mt-[-4px] flex gap-[16px] overflow-x-auto px-[26px] py-[30px]">
             {channels.map((c, i) => {
               const focused = focus.row === 0 && focus.col === i
-              const art = asset(c.logo)
               return (
-                <div key={c.name} className="tv-scroll-gap w-[186px] shrink-0">
-                  <div
-                    className={`grid aspect-video place-items-center rounded-[14px] border border-tv-line bg-tv-raised px-[18px] transition-transform duration-200 ${
-                      focused ? 'tv-focus scale-[1.06] bg-tv-panel' : ''
-                    }`}
-                  >
-                    {art && (
-                      <img
-                        src={art}
-                        alt={c.name}
-                        loading="lazy"
-                        className={`max-h-[70%] w-full object-contain ${focused ? '' : 'opacity-80'}`}
-                      />
-                    )}
-                  </div>
+                <div key={c.name} className="shrink-0">
+                  <TvChannelTile channel={c} focused={focused} width={232} />
+                  {/* the two things only a broadcaster can offer, on the channel
+                      you are standing on */}
                   {focused && (
                     <div className="mt-[10px] flex items-center gap-[10px]">
                       <span className="flex items-center gap-[7px] rounded-full bg-tv-action px-[14px] py-[6px] text-[17px]/[22px] font-bold">

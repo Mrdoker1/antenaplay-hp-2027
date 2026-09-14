@@ -73,6 +73,11 @@ export function HeaderBar({ s }: { s: SmartSearch }) {
             >
               Autentifică-te
             </a>
+            {/* the paying path has to exist for someone who is not a subscriber
+                yet — "log in" is the only door today, and it is the wrong one */}
+            <a href="#" className="shrink-0 rounded-[100px] px-[16px] py-[9px] text-[13px]/[16px] font-semibold text-v3-fg/80 transition-colors hover:text-v3-fg">
+              Vezi abonamente
+            </a>
           </div>
 
           {/* the collapsible half of the same surface */}

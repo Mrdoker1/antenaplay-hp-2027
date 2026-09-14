@@ -2,11 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import mark from '../assets/antena-mark.svg'
 import { asset } from '../lib/assets'
 import { accentFromTitle } from '../v2027/accent'
-import type { Channel } from '../data/types'
-import { rows as catalogue, type Item } from '../v2027/catalog'
+import { channelsFree, channelsTv, rows as catalogue, type ChannelItem, type Item } from '../v2027/catalog'
 import { PlayGlyph } from '../v2027/PlayGlyph'
 import { tidyTitle } from '../v2027/title'
-import { canaleGratuite, canaleTv } from '../data/channels'
 import { TvChannelTile } from './TvChannelTile'
 import { TvRail } from './TvRail'
 import { franchiseFor, titleCount, type Franchise } from '../lib/franchise'
@@ -51,10 +49,10 @@ const SECTIONS: Record<string, { title: string; filters: Filter[] }> = {
   },
 }
 
-type Rail = { title: string; items?: Item[]; channels?: Channel[]; ranked?: boolean }
+type Rail = { title: string; items?: Item[]; channels?: ChannelItem[]; ranked?: boolean }
 
 const RAILS: Rail[] = [
-  { title: 'Canale TV', channels: [...canaleTv.slice(0, 24), ...canaleGratuite] },
+  { title: 'Canale TV', channels: [...channelsTv.slice(0, 24), ...channelsFree] },
   { title: 'Continuă de unde ai rămas', items: catalogue.continueWatching },
   { title: 'Trending în AntenaPLAY', items: catalogue.trending },
   { title: 'Top 10 în România', items: catalogue.top10.slice(0, 10), ranked: true },
@@ -160,13 +158,16 @@ export default function TvHome() {
   }, [menuOpen, menuIndex, searchOpen, franchise])
 
   const rail = focus.row > 0 ? RAILS[focus.row - 1] : null
+  /* A channel is not a title: standing on one, the hero has to say which channel
+     and what is on it, not fall back to somebody else's artwork. */
+  const channel = rail?.channels?.[focus.col] ?? null
   const item = rail?.items?.[focus.col] ?? catalogue.continueWatching[0]
-  const artKey = item.cover === PLACEHOLDER ? null : item.cover
+  const artKey = channel || item.cover === PLACEHOLDER ? null : item.cover
   const art = asset(artKey)
-  const { a1 } = accentFromTitle(item.title || 'antena')
+  const { a1 } = accentFromTitle(channel?.name ?? item.title ?? 'antena')
   /* A card that leads somewhere deeper has to say so — on a remote there is no
      hover to discover it with. */
-  const universe = focus.row > 0 ? franchiseFor(item.title) : null
+  const universe = focus.row > 0 && !channel ? franchiseFor(item.title) : null
 
   useEffect(() => {
     document.documentElement.dataset.skin = 'tv'
@@ -248,10 +249,16 @@ export default function TvHome() {
               {rail ? rail.title : 'AntenaPLAY'}
             </p>
             <h1 className="mt-[10px] line-clamp-2 text-[50px]/[54px] font-black tracking-[-0.03em]">
-              {tidyTitle(item.title)}
+              {tidyTitle(channel ? channel.name : item.title)}
             </h1>
-            <p className="mt-[12px] font-meta text-[20px]/[26px] uppercase tracking-[0.1em] text-tv-dim">
-              {item.meta}
+            <p className="mt-[12px] flex items-center gap-[10px] font-meta text-[20px]/[26px] uppercase tracking-[0.1em] text-tv-dim">
+              {channel?.badge === 'live' && (
+                <span className="flex items-center gap-[7px] rounded-[6px] bg-tv-action px-[9px] py-[2px] text-[16px]/[22px] text-tv-fg">
+                  <span className="size-[7px] rounded-full bg-white" />
+                  Live
+                </span>
+              )}
+              {channel ? channel.now : item.meta}
             </p>
             {universe && (
               <p className="mt-[12px] flex w-fit items-center gap-[10px] rounded-full bg-white/10 py-[6px] pe-[16px] ps-[8px] font-meta text-[17px]/[22px] uppercase tracking-[0.1em] text-tv-fg/85">
@@ -269,7 +276,7 @@ export default function TvHome() {
                 }`}
               >
                 <PlayGlyph className="size-[20px]" />
-                Redă
+                {channel ? 'Intră' : 'Redă'}
               </span>
               <span
                 className={`flex items-center gap-[10px] rounded-full bg-white/12 px-[22px] py-[10px] text-[21px]/[26px] font-semibold transition-transform duration-200 ${
