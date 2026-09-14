@@ -52,10 +52,14 @@ export function TvLiveScreen({ active, onOpenMenu }: { active: boolean; onOpenMe
 
         {/* what is on, on the channel you are standing on */}
         <div className="mt-[16px] flex items-center gap-[22px]">
+          {/* no plate behind the mark — a box drawn round a logo that is
+              already light reads as a second, crooked frame */}
           {logo && (
-            <span className="grid h-[74px] w-[124px] shrink-0 place-items-center rounded-[12px] border border-tv-line bg-tv-raised px-[14px]">
-              <img src={logo} alt="" className="max-h-[64%] w-full object-contain" />
-            </span>
+            <img
+              src={logo}
+              alt=""
+              className="h-[64px] w-[172px] shrink-0 object-contain object-left drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)]"
+            />
           )}
           <div className="min-w-0 flex-1">
             <p className="flex items-center gap-[10px] font-meta text-[18px]/[24px] uppercase tracking-[0.14em] text-tv-action">
@@ -97,13 +101,15 @@ export function TvLiveScreen({ active, onOpenMenu }: { active: boolean; onOpenMe
                   <TvChannelTile channel={c} focused={focused} width={232} />
                   {/* the two things only a broadcaster can offer, on the channel
                       you are standing on */}
+                  {/* clear of the focus ring: outline 4 + offset 4 + the 8px
+                      shadow ring, so 16px before anything may sit below */}
                   {focused && (
-                    <div className="mt-[10px] flex items-center gap-[10px]">
-                      <span className="flex items-center gap-[7px] rounded-full bg-tv-action px-[14px] py-[6px] text-[17px]/[22px] font-bold">
-                        <PlayGlyph className="size-[13px]" />
+                    <div className="mt-[24px] flex items-center gap-[12px]">
+                      <span className="flex items-center gap-[9px] rounded-full bg-tv-action px-[18px] py-[9px] text-[17px]/[22px] font-bold">
+                        <PlayGlyph className="size-[14px]" />
                         Intră
                       </span>
-                      <span className="rounded-full bg-white/12 px-[14px] py-[6px] text-[17px]/[22px] font-semibold">
+                      <span className="rounded-full bg-white/12 px-[18px] py-[9px] text-[17px]/[22px] font-semibold">
                         De la început
                       </span>
                     </div>

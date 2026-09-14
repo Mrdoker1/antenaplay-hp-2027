@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import mark from '../assets/antena-mark.svg'
 import { asset } from '../lib/assets'
 import { accentFromTitle } from '../v2027/accent'
 import { channelsFree, channelsTv, rows as catalogue, type ChannelItem, type Item } from '../v2027/catalog'
+import { HeroVideo } from '../v3ai/HeroVideo'
 import { PlayGlyph } from '../v2027/PlayGlyph'
 import { tidyTitle } from '../v2027/title'
 import { TvChannelTile } from './TvChannelTile'
@@ -61,6 +61,19 @@ const RAILS: Rail[] = [
   { title: 'Top filme', items: catalogue.topFilme.slice(0, 10), ranked: true },
   { title: 'Filme și seriale noi', items: catalogue.filmeSerialeNoi },
 ]
+
+/** A channel is a live feed, so its backdrop moves.
+ *
+ *  AntenaPLAY's own streams sit behind their token gate, so what plays here is
+ *  a clip from the show's official YouTube upload, cycled per channel. The
+ *  point the screen is making is that standing on a channel shows you what is
+ *  going out — not that this is the feed. */
+const LIVE_STANDIN = ['6RYPPLbmTok', 'jvhWbe3fAbs', 'ujyPsd4XN3Y']
+
+/** Focus moves a row at a time, and a remote held down moves it fast. Starting
+ *  a player on every step would open a dozen iframes to close them again, so
+ *  the feed waits for focus to settle. */
+const DWELL_MS = 900
 
 const PLACEHOLDER = '1428dec7d5b66b0e09260d862db7ea5e0519cf4f'
 /** Row 0 is the hero's own actions; the rails follow. */
@@ -164,10 +177,26 @@ export default function TvHome() {
   const item = rail?.items?.[focus.col] ?? catalogue.continueWatching[0]
   const artKey = channel || item.cover === PLACEHOLDER ? null : item.cover
   const art = asset(artKey)
+  const channelLogo = asset(channel?.logo ?? null)
   const { a1 } = accentFromTitle(channel?.name ?? item.title ?? 'antena')
   /* A card that leads somewhere deeper has to say so — on a remote there is no
      hover to discover it with. */
   const universe = focus.row > 0 && !channel ? franchiseFor(item.title) : null
+
+  const [rested, setRested] = useState<string | null>(null)
+  useEffect(() => {
+    const name = channel?.name
+    if (!name) return
+    const t = setTimeout(() => setRested(name), DWELL_MS)
+    return () => clearTimeout(t)
+  }, [channel])
+
+  /* A name left over from a channel you have moved off matches nothing, so
+     there is no state to clear — which keeps the feed instant on the way back. */
+  const feed =
+    channel && rested === channel.name
+      ? LIVE_STANDIN[[...channel.name].reduce((n, c) => n + c.charCodeAt(0), 0) % LIVE_STANDIN.length]
+      : null
 
   useEffect(() => {
     document.documentElement.dataset.skin = 'tv'
@@ -194,7 +223,28 @@ export default function TvHome() {
             which is roughly its native size, and dissolves into the page with a
             mask rather than ending on a visible edge. */}
         <div className="absolute inset-y-0 right-0 w-[62%] overflow-hidden">
-          {art ? (
+          {feed ? (
+            <div className="relative size-full overflow-hidden">
+              {/* the fed colour stays underneath, so the channel keeps its own
+                  hue while the player boots */}
+              <div
+                className="absolute inset-0"
+                style={{ backgroundImage: `radial-gradient(90% 110% at 80% 0%, hsl(${a1} / 0.5), transparent 70%)` }}
+              />
+              {/* A 16:9 player in a box this tall letterboxes, so the frame is
+                  sized wider than the box and centred — the video covers and the
+                  bars fall outside. */}
+              {/* This box is taller than it is wide, so the frame is scaled
+                  well past it — otherwise the 16:9 video letterboxes inside. */}
+              <HeroVideo
+                key={feed}
+                id={feed}
+                muted
+                scale={1.8}
+                fade="linear-gradient(to right, transparent 0%, rgba(0,0,0,0.3) 24%, #000 60%), linear-gradient(to bottom, #000 34%, transparent 76%)"
+              />
+            </div>
+          ) : art ? (
             <img
               key={artKey}
               src={art}
@@ -219,29 +269,28 @@ export default function TvHome() {
         <div className="absolute inset-0 bg-[linear-gradient(97deg,var(--color-tv-ground)_2%,rgba(7,7,10,0.88)_28%,rgba(7,7,10,0.35)_54%,transparent_86%)]" />
         <div className="absolute inset-x-0 bottom-0 h-[58%] bg-gradient-to-b from-transparent via-tv-ground/80 to-tv-ground" />
 
-        {/* the logo is not a destination, so it is not focusable */}
-        <div
-          className="absolute inset-x-0 top-0 flex items-center"
-          style={{
-            paddingLeft: 'calc(var(--tv-rail) + var(--tv-safe))',
-            paddingRight: 'var(--tv-safe)',
-            paddingTop: 26,
-          }}
-        >
-          <span className="flex items-baseline gap-[8px]">
-            <img src={mark} alt="" className="h-[24px] w-auto" />
-            <span className="text-[24px]/[28px] font-black tracking-[-0.03em]">
-              antena<span className="font-light text-tv-fg/65">PLAY</span>
-            </span>
-          </span>
-        </div>
+        {/* The AntenaPLAY logo lives in the side menu now — it is not a
+            destination, and the corner is worth more to the channel you are
+            standing on than to our own mark. */}
+        {channelLogo && (
+          <div
+            className="absolute inset-x-0 top-0 flex justify-end"
+            style={{ paddingRight: 'var(--tv-safe)', paddingTop: 26 }}
+          >
+            <img
+              src={channelLogo}
+              alt=""
+              className="h-[52px] w-[150px] object-contain object-right drop-shadow-[0_2px_14px_rgba(0,0,0,0.8)]"
+            />
+          </div>
+        )}
 
         <div
           className="absolute left-0 right-0"
           style={{
             paddingLeft: 'calc(var(--tv-rail) + var(--tv-safe))',
             paddingRight: 'var(--tv-safe)',
-            top: 96,
+            top: 76,
           }}
         >
           <div className="max-w-[620px]">

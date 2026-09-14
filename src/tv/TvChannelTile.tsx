@@ -13,7 +13,11 @@ import type { ChannelItem } from '../v2027/catalog'
  *
  *  What differs from the pointer version is only what focus is for: there is no
  *  hover state to reveal a play button, so focus itself brightens the frame and
- *  the mark, and the name goes from dimmed to full. */
+ *  the mark, and the name goes from dimmed to full.
+ *
+ *  The mark sits on the frame with no plate behind it. A dark square around a
+ *  logo that is already light reads as a second, crooked box inside the card;
+ *  a drop shadow does the same legibility job without drawing an edge. */
 export function TvChannelTile({
   channel,
   focused,
@@ -50,7 +54,7 @@ export function TvChannelTile({
             alt={channel.name}
             loading="lazy"
             decoding="async"
-            className={`absolute right-[12px] top-[12px] size-[62px] rounded-[12px] bg-black/45 object-contain p-[8px] transition-opacity duration-200 ${
+            className={`absolute right-[14px] top-[14px] h-[44px] w-[84px] object-contain object-right drop-shadow-[0_2px_10px_rgba(0,0,0,0.75)] transition-opacity duration-200 ${
               focused ? 'opacity-100' : 'opacity-80'
             }`}
           />
