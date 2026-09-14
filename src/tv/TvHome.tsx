@@ -5,9 +5,10 @@ import { accentFromTitle } from '../v2027/accent'
 import { rows as catalogue, type Item } from '../v2027/catalog'
 import { PlayGlyph } from '../v2027/PlayGlyph'
 import { tidyTitle } from '../v2027/title'
-import { IconSparkle } from '../v3ai/icons'
 import { TvCard } from './TvCard'
 import { TvSearch } from './TvSearch'
+import { MENU } from './menu'
+import { TvSideMenu } from './TvSideMenu'
 import { TvStage } from './TvStage'
 import { useTvNav } from './useTvNav'
 
@@ -21,35 +22,78 @@ const RAILS: { title: string; items: Item[] }[] = [
 ]
 
 const PLACEHOLDER = '1428dec7d5b66b0e09260d862db7ea5e0519cf4f'
+/** Row 0 is the hero's own actions; the rails follow. */
+const HERO_ACTIONS = 2
 
 /** AntenaPLAY home page — Smart TV.
  *
- *  Not the web page made bigger. Three things drive the layout, and all three
- *  come from the remote:
+ *  Not the web page made bigger. Every decision follows from a TV having no
+ *  pointer, only a focus and four directions:
  *
- *  - **Focus replaces hover.** Everything the web skins reveal on hover lives
- *    in the focused state, and only the focused card shows it.
- *  - **The backdrop follows focus.** Moving across a row changes the whole
- *    screen behind it, so the detail you would otherwise open a page for is
- *    already in front of you — the cheapest way to cut presses on a device
- *    where every press costs.
- *  - **One row, plus the top of the next.** A remote scrolls a row at a time,
- *    so a screen crammed with rows is a screen you cannot reach the bottom of.
+ *  - **Focus replaces hover**, and only the focused card shows anything.
+ *  - **The backdrop follows focus**, so the detail you would otherwise open a
+ *    page for is already on screen. On a device where every press costs, that
+ *    is the cheapest press to remove.
+ *  - **One row, plus the top of the next**, because a remote scrolls a row at a
+ *    time.
+ *  - **Left from the first column opens the menu**, the way every TV app trains
+ *    you to reach it.
  *
- *  Search gets its own screen because it is the one thing a remote is genuinely
- *  bad at, and therefore the one place an assistant earns its keep. */
+ *  Nothing decorative takes focus: the logo is not a destination, so it is not
+ *  in the model. The hero's Play button is, because it is the one thing most
+ *  sessions actually want. */
 export default function TvHome() {
   const [searchOpen, setSearchOpen] = useState(false)
+  const [menuIndex, setMenuIndex] = useState<number | null>(null)
+  const [section, setSection] = useState('home')
+  const menuOpen = menuIndex !== null
 
-  // row 0 is the top bar; the content rails follow
-  const lengths = useMemo(() => [2, ...RAILS.map((r) => r.items.length)], [])
+  const lengths = useMemo(() => [HERO_ACTIONS, ...RAILS.map((r) => r.items.length)], [])
 
   const onEnter = useCallback(({ row, col }: { row: number; col: number }) => {
     if (row === 0 && col === 1) setSearchOpen(true)
   }, [])
 
-  // the search overlay takes the remote while it is open
-  const { focus } = useTvNav(lengths, onEnter, !searchOpen)
+  const { focus } = useTvNav(lengths, onEnter, !menuOpen && !searchOpen)
+
+  /* The menu owns the remote while it is open, and Left from the first column
+     is how you hand it over. */
+  useEffect(() => {
+    if (searchOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (!menuOpen) {
+        if (e.key === 'ArrowLeft' && focus.col === 0) {
+          e.preventDefault()
+          setMenuIndex(MENU.findIndex((m) => m.key === section))
+        }
+        return
+      }
+      e.preventDefault()
+      switch (e.key) {
+        case 'ArrowUp':
+          setMenuIndex((i) => Math.max(0, (i ?? 0) - 1))
+          break
+        case 'ArrowDown':
+          setMenuIndex((i) => Math.min(MENU.length - 1, (i ?? 0) + 1))
+          break
+        case 'ArrowRight':
+        case 'Escape':
+        case 'Backspace':
+          setMenuIndex(null)
+          break
+        case 'Enter': {
+          const picked = MENU[menuIndex]
+          setMenuIndex(null)
+          if (picked.key === 'search') setSearchOpen(true)
+          else setSection(picked.key)
+          break
+        }
+        default:
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [menuOpen, menuIndex, focus.col, searchOpen, section])
 
   const rail = focus.row > 0 ? RAILS[focus.row - 1] : null
   const item = rail?.items[focus.col] ?? RAILS[0].items[0]
@@ -66,7 +110,6 @@ export default function TvHome() {
 
   return (
     <TvStage>
-      {/* the backdrop is whatever is focused */}
       {art ? (
         <img key={artKey} src={art} alt="" className="absolute inset-0 size-full object-cover" />
       ) : (
@@ -78,34 +121,39 @@ export default function TvHome() {
       <div className="absolute inset-0 bg-[linear-gradient(97deg,var(--color-tv-ground)_2%,rgba(7,7,10,0.92)_34%,rgba(7,7,10,0.45)_62%,transparent_92%)]" />
       <div className="absolute inset-x-0 bottom-0 h-[62%] bg-gradient-to-b from-transparent via-tv-ground/85 to-tv-ground" />
 
-      {/* top bar */}
+      {/* the menu dims the rest rather than replacing it, so you keep your place */}
       <div
-        className="absolute inset-x-0 top-0 flex items-center gap-[20px]"
-        style={{ paddingInline: 'var(--tv-safe)', paddingTop: 26 }}
+        className={`absolute inset-0 z-30 bg-black/55 transition-opacity duration-300 ${
+          menuOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
+        }`}
+      />
+      <TvSideMenu open={menuOpen} index={menuIndex ?? 0} active={section} />
+
+      {/* the logo is not a destination, so it is not focusable */}
+      <div
+        className="absolute inset-x-0 top-0 flex items-center"
+        style={{
+          paddingLeft: 'calc(var(--tv-rail) + var(--tv-safe))',
+          paddingRight: 'var(--tv-safe)',
+          paddingTop: 26,
+        }}
       >
-        <span className={`flex items-baseline gap-[8px] rounded-[8px] px-[8px] py-[4px] ${focus.row === 0 && focus.col === 0 ? 'tv-focus' : ''}`}>
+        <span className="flex items-baseline gap-[8px]">
           <img src={mark} alt="" className="h-[24px] w-auto" />
           <span className="text-[24px]/[28px] font-black tracking-[-0.03em]">
             antena<span className="font-light text-tv-fg/65">PLAY</span>
           </span>
         </span>
-
-        <span
-          className={`ms-auto flex items-center gap-[12px] rounded-full bg-white/10 px-[22px] py-[10px] transition-transform duration-200 ${
-            focus.row === 0 && focus.col === 1 ? 'tv-focus-ai scale-[1.04]' : ''
-          }`}
-        >
-          <IconSparkle className="size-[24px] text-tv-ai" />
-          <span className="text-[22px]/[28px] font-semibold">Caută cu vocea</span>
-        </span>
-
-        <span className="font-meta text-[18px]/[24px] uppercase tracking-[0.14em] text-tv-faint">
-          ↑ ↓ ← → · OK
-        </span>
       </div>
 
-      {/* the focused title, in place of a details page */}
-      <div className="absolute left-0 right-0" style={{ paddingInline: 'var(--tv-safe)', top: 96 }}>
+      <div
+        className="absolute left-0 right-0"
+        style={{
+          paddingLeft: 'calc(var(--tv-rail) + var(--tv-safe))',
+          paddingRight: 'var(--tv-safe)',
+          top: 96,
+        }}
+      >
         <div className="max-w-[620px]">
           <p className="font-meta text-[19px]/[26px] uppercase tracking-[0.16em] text-tv-dim">
             {rail ? rail.title : 'AntenaPLAY'}
@@ -116,31 +164,50 @@ export default function TvHome() {
           <p className="mt-[12px] font-meta text-[20px]/[26px] uppercase tracking-[0.1em] text-tv-dim">
             {item.meta}
           </p>
+
           <div className="mt-[18px] flex items-center gap-[12px]">
-            <span className="flex items-center gap-[10px] rounded-full bg-tv-action px-[22px] py-[10px] text-[21px]/[26px] font-bold">
+            <span
+              className={`flex items-center gap-[10px] rounded-full bg-tv-action px-[22px] py-[10px] text-[21px]/[26px] font-bold transition-transform duration-200 ${
+                focus.row === 0 && focus.col === 0 ? 'tv-focus scale-[1.04]' : ''
+              }`}
+            >
               <PlayGlyph className="size-[20px]" />
-              OK · Redă
+              Redă
+            </span>
+            <span
+              className={`flex items-center gap-[10px] rounded-full bg-white/12 px-[22px] py-[10px] text-[21px]/[26px] font-semibold transition-transform duration-200 ${
+                focus.row === 0 && focus.col === 1 ? 'tv-focus-ai scale-[1.04]' : ''
+              }`}
+            >
+              <Sparkle className="size-[22px] text-tv-fg" />
+              Caută cu vocea
             </span>
           </div>
         </div>
       </div>
 
-      {/* one row in full, the next peeking — a remote moves a row at a time */}
+      {/* one row in full, the next peeking — a remote moves a row at a time.
+          The padding is what keeps a focused card's ring and lift from being
+          clipped: overflow cuts at the padding box, so the room has to be
+          padding rather than margin. */}
       <div className="absolute inset-x-0 bottom-0" style={{ height: 360 }}>
         <div
-          className="tv-no-scrollbar h-full overflow-y-auto"
-          style={{ paddingInline: 'var(--tv-safe)' }}
+          className="tv-no-scrollbar h-full overflow-y-auto py-[18px]"
+          style={{
+            paddingLeft: 'calc(var(--tv-rail) + var(--tv-safe) - 18px)',
+            paddingRight: 'calc(var(--tv-safe) - 18px)',
+          }}
         >
           {RAILS.map((r, rowIndex) => (
-            <section key={r.title} className="pb-[22px]">
+            <section key={r.title} className="pb-[16px]">
               <h2
-                className={`text-[24px]/[30px] font-bold tracking-[-0.01em] transition-colors ${
+                className={`px-[18px] text-[24px]/[30px] font-bold tracking-[-0.01em] transition-colors ${
                   focus.row === rowIndex + 1 ? 'text-tv-fg' : 'text-tv-faint'
                 }`}
               >
                 {r.title}
               </h2>
-              <div className="tv-no-scrollbar mt-[12px] flex gap-[16px] overflow-x-auto pb-[10px] pt-[8px]">
+              <div className="tv-no-scrollbar mt-[10px] flex gap-[16px] overflow-x-auto px-[18px] py-[14px]">
                 {r.items.map((it, colIndex) => (
                   <TvCard
                     key={`${it.title}-${colIndex}`}
@@ -157,5 +224,15 @@ export default function TvHome() {
 
       {searchOpen && <TvSearch onClose={() => setSearchOpen(false)} />}
     </TvStage>
+  )
+}
+
+/** White rather than the assistant's violet: over a bright backdrop the violet
+ *  disappeared into the artwork. */
+function Sparkle({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden>
+      <path d="M12 2.6l1.7 5.1a2 2 0 0 0 1.26 1.26L20.1 10.7l-5.14 1.74a2 2 0 0 0-1.26 1.26L12 18.84l-1.7-5.14a2 2 0 0 0-1.26-1.26L3.9 10.7l5.14-1.74A2 2 0 0 0 10.3 7.7z" />
+    </svg>
   )
 }

@@ -23,6 +23,8 @@
   /* Broadcast-safe margin. Panels overscan, so nothing that must be readable
      sits in the outer 5%. */
   --tv-safe: 48px;
+  /* The collapsed side menu. Content starts after it, not under it. */
+  --tv-rail: 72px;
 }
 
 @layer base {

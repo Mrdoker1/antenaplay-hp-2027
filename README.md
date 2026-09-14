@@ -141,6 +141,15 @@ that a TV has no pointer — there is a focus and four directions:
   screen crammed with rows is a screen you cannot reach the bottom of.
 - **Each row remembers its column.** Going down and back up returns you where
   you were; without it, browsing feels like being reset.
+- **Left from the first column opens the menu**, the way every TV app trains you
+  to reach it. It is a strip of icons until it has the remote, then it slides
+  out with labels, and the rest of the screen dims rather than disappears so you
+  keep your place.
+- **Only what you can act on takes focus.** The logo is not a destination, so it
+  is not in the model; the hero's Play button is, because it is what most
+  sessions want.
+- **No key hints on screen.** Arrows on a remote are self-evident; the line they
+  occupied now says how much the search found.
 - **Search has its own screen and no keyboard.** Nobody types a sentence with a
   D-pad, which is exactly why the assistant earns its keep here more than on the
   web. You press the microphone or pick a phrase. The microphone uses the

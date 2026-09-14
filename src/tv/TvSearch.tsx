@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { asset } from '../lib/assets'
 import { IconSparkle } from '../v3ai/icons'
-import { search, SUGGESTIONS, type Hit } from '../v3ai/search'
+import { countMatches, search, stats, SUGGESTIONS, type Hit } from '../v3ai/search'
 import { useTvNav } from './useTvNav'
 
 type Recognition = {
@@ -44,6 +44,7 @@ export function TvSearch({ onClose }: { onClose: () => void }) {
   const recognition = useRef<Recognition | null>(null)
 
   const hits = useMemo<Hit[]>(() => (query ? search(query, 8) : []), [query])
+  const total = useMemo(() => (query ? countMatches(query) : 0), [query])
 
   const rows = useMemo(
     () => [1 + SUGGESTIONS.length, Math.max(hits.length, 1)],
@@ -111,15 +112,23 @@ export function TvSearch({ onClose }: { onClose: () => void }) {
         }}
       />
 
-      <div className="relative flex h-full flex-col" style={{ padding: 'var(--tv-safe)' }}>
+      <div
+        className="relative flex h-full flex-col"
+        style={{
+          padding: 'var(--tv-safe)',
+          paddingLeft: 'calc(var(--tv-rail) + var(--tv-safe))',
+        }}
+      >
         <div className="flex items-center gap-[14px]">
-          <IconSparkle className={`size-[30px] text-tv-ai ${listening ? 'v3-thinking' : ''}`} />
-          <p className="text-[26px]/[32px] font-meta uppercase tracking-[0.16em] text-tv-ai">
+          <IconSparkle className={`size-[30px] text-tv-fg ${listening ? 'v3-thinking' : ''}`} />
+          <p className="text-[26px]/[32px] font-meta uppercase tracking-[0.16em] text-tv-dim">
             Căutare AI
           </p>
         </div>
 
-        <h1 className="mt-[18px] text-[46px]/[52px] font-bold tracking-[-0.02em]">
+        {/* one line, always: a phrase that wraps pushes the results off the
+            screen, and there is no scrolling past it with a remote */}
+        <h1 className="mt-[18px] truncate text-[46px]/[56px] font-bold tracking-[-0.02em]">
           {listening ? 'Te ascult…' : query ? `„${query}"` : 'Ce ai chef să vezi?'}
         </h1>
         <p className="mt-[10px] text-[22px]/[30px] text-tv-dim">
@@ -137,7 +146,7 @@ export function TvSearch({ onClose }: { onClose: () => void }) {
           </Pill>
           {SUGGESTIONS.map((phrase, i) => (
             <Pill key={phrase} focused={focus.row === 0 && focus.col === i + 1}>
-              „{phrase}"
+              <span className="first-letter:uppercase">{phrase}</span>
             </Pill>
           ))}
         </div>
@@ -156,8 +165,11 @@ export function TvSearch({ onClose }: { onClose: () => void }) {
           )}
         </div>
 
+        {/* the arrows are self-evident; what is not is how much was found */}
         <p className="font-meta text-[20px]/[26px] uppercase tracking-[0.14em] text-tv-faint">
-          ← → alege · OK confirmă · Back închide
+          {query
+            ? `${total} rezultate pentru „${query}"`
+            : `${stats.films} de filme · ${stats.shows} de titluri AntenaPLAY`}
         </p>
       </div>
     </div>
