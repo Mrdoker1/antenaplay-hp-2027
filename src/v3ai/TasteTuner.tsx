@@ -26,10 +26,12 @@ import type { SmartSearch } from './useSmartSearch'
 /** Poster width, and the distance from one card to the next — the difference
  *  is the overlap that makes the row read as a queue rather than a shelf. */
 const CARD_W = 152
-const STEP = 130
+/** Half a card of offset: enough that every poster in the pile is readable,
+ *  tight enough that the pile is a pile rather than a shelf. */
+const STEP = 62
 /** How far past the front card the queue is drawn. Past this they are behind
  *  the panel edge anyway. */
-const VISIBLE = 9
+const VISIBLE = 8
 
 export function TasteTuner({ s, onClose }: { s: SmartSearch; onClose: () => void }) {
   const deck = useMemo(() => tasteDeck(14), [])
@@ -72,114 +74,115 @@ export function TasteTuner({ s, onClose }: { s: SmartSearch; onClose: () => void
           ✕
         </button>
 
-        <div className="relative py-[clamp(18px,2.2vw,30px)]">
-          <div className="grid gap-[clamp(16px,2vw,36px)] px-[clamp(18px,2.2vw,30px)] lg:grid-cols-[1fr_320px]">
-            <div className="min-w-0 pe-[30px]">
-              <p className="flex items-center gap-[8px] text-[12px]/[18px] uppercase tracking-[0.14em] text-v3-ai">
-                <IconSparkle className="size-[14px]" />
-                Antrenează căutarea AI
-              </p>
-              <h2 className="mt-[8px] text-balance text-[clamp(21px,2vw,30px)]/[1.15] font-black tracking-[-0.025em]">
-                {done ? 'Gata — asta cauți.' : 'Spune-i ce îți place.'}
-              </h2>
-              <p className="mt-[8px] max-w-[56ch] text-[14px]/[21px] text-v3-dim">
-                {done
-                  ? 'Recomandările și căutarea pornesc de aici. Poți relua oricând.'
-                  : 'Răspunde da sau nu la câteva afișe. Nu trebuie să descrii nimic în cuvinte — căutarea AI se scrie singură, din ce alegi.'}
-              </p>
-
-              {done && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setLiked([])
-                    setPassed([])
-                  }}
-                  className="mt-[18px] rounded-[100px] border border-white/14 px-[18px] py-[10px] text-[13px]/[19px] font-semibold text-v3-dim transition-colors hover:border-white/30 hover:text-v3-fg"
-                >
-                  Reia antrenamentul
-                </button>
-              )}
+        <div
+          className={`relative grid items-center gap-[clamp(16px,2vw,34px)] p-[clamp(18px,2.2vw,30px)] ${
+            done ? 'lg:grid-cols-[1fr_320px]' : 'lg:grid-cols-[360px_1fr_320px]'
+          }`}
+        >
+          {/* The stack. It leans out to the right and is cut off there, which
+              is the whole of what it has to say: there are more of these than
+              you are going to be asked about. The answered card leaves past
+              the left edge, so this clips on both sides. */}
+          {!done && (
+            <div
+              className="relative w-full overflow-hidden"
+              style={{ height: Math.round(CARD_W * 1.45) }}
+            >
+              {deck.map((item, i) => {
+                const d = i - seen
+                if (d < -1 || d > VISIBLE) return null
+                const gone = d < 0
+                return (
+                  <Poster
+                    key={item.key}
+                    card={item}
+                    front={d === 0}
+                    style={{
+                      width: CARD_W,
+                      transform: gone
+                        ? `translateX(${-CARD_W - 48}px) rotate(-6deg)`
+                        : `translateX(${d * STEP}px)`,
+                      opacity: gone ? 0 : Math.max(0.3, 1 - d * 0.11),
+                      zIndex: VISIBLE + 2 - d,
+                    }}
+                  />
+                )
+              })}
             </div>
+          )}
 
-            {/* The query, being written. It is the payoff of the whole block:
-                the answers are only worth giving if you can watch them turn
-                into something the search will actually run. */}
-            <aside className="flex min-w-0 flex-col items-start gap-[12px]">
-              <h3 className="text-[12px]/[18px] uppercase tracking-[0.12em] text-v3-faint">
-                Ce a înțeles
-              </h3>
-              {read.labels.length ? (
-                <ul className="flex flex-wrap gap-[6px]">
-                  {read.labels.map((label) => (
-                    <li
-                      key={label}
-                      className="rounded-[6px] bg-v3-ai/14 px-[8px] py-[3px] text-[11px]/[17px] font-medium uppercase tracking-[0.06em] text-v3-ai"
-                    >
-                      {label}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-[13px]/[19px] text-v3-faint">
-                  Încă nimic. Primul „da" e de ajuns.
-                </p>
-              )}
+          <div className="min-w-0 pe-[20px]">
+            <p className="flex items-center gap-[8px] text-[12px]/[18px] uppercase tracking-[0.14em] text-v3-ai">
+              <IconSparkle className="size-[14px]" />
+              Antrenează căutarea AI
+            </p>
+            <h2 className="mt-[8px] text-balance text-[clamp(21px,2vw,30px)]/[1.15] font-black tracking-[-0.025em]">
+              {done ? 'Gata — asta cauți.' : 'Spune-i ce îți place.'}
+            </h2>
+            <p className="mt-[8px] max-w-[52ch] text-[14px]/[21px] text-v3-dim">
+              {done
+                ? 'Recomandările și căutarea pornesc de aici. Poți relua oricând.'
+                : 'Răspunde da sau nu la câteva afișe. Nu trebuie să descrii nimic în cuvinte — căutarea AI se scrie singură, din ce alegi.'}
+            </p>
 
+            {done ? (
               <button
                 type="button"
-                disabled={!read.phrase}
-                onClick={() => s.ask(read.phrase)}
-                className="mt-[4px] rounded-[100px] bg-v3-ai px-[18px] py-[11px] text-[13px]/[19px] font-bold text-black transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:bg-white/8 disabled:text-v3-faint"
+                onClick={() => {
+                  setLiked([])
+                  setPassed([])
+                }}
+                className="mt-[18px] rounded-[100px] border border-white/14 px-[18px] py-[10px] text-[13px]/[19px] font-semibold text-v3-dim transition-colors hover:border-white/30 hover:text-v3-fg"
               >
-                Caută după gusturile mele
+                Reia antrenamentul
               </button>
-            </aside>
-          </div>
-
-          {!done && (
-            <div className="flex items-center gap-[clamp(16px,1.8vw,26px)] ps-[clamp(18px,2.2vw,30px)] pt-[clamp(18px,2vw,28px)]">
-              <div className="flex shrink-0 flex-col gap-[10px]">
-                <div className="flex items-center gap-[10px]">
-                  <Vote tone="no" onClick={() => answer(false)} label="Nu mă atrage" />
-                  <Vote tone="yes" onClick={() => answer(true)} label="Îmi place" />
-                </div>
-                <p className="font-meta text-[11px]/[17px] uppercase tracking-[0.12em] text-v3-faint">
+            ) : (
+              <div className="mt-[18px] flex items-center gap-[12px]">
+                <Vote tone="no" onClick={() => answer(false)} label="Nu mă atrage" />
+                <Vote tone="yes" onClick={() => answer(true)} label="Îmi place" />
+                {/* The title is on the card; what is written nowhere else is
+                    how long this goes on for, and that is the question anyone
+                    asked to do a chore has first. */}
+                <p className="ms-[6px] font-meta text-[11px]/[17px] uppercase tracking-[0.12em] text-v3-faint">
                   {seen} din {deck.length}
                 </p>
               </div>
+            )}
+          </div>
 
-              {/* The queue runs off the right edge of the panel — it is a
-                  catalogue, not a form with its last page in sight — and the
-                  answered card leaves past the left edge, which is why this
-                  box clips on both sides. */}
-              <div
-                className="relative min-w-0 flex-1 overflow-hidden"
-                style={{ height: Math.round(CARD_W * 1.45) }}
-              >
-                {deck.map((item, i) => {
-                  const d = i - seen
-                  if (d < -1 || d > VISIBLE) return null
-                  const gone = d < 0
-                  return (
-                    <Poster
-                      key={item.key}
-                      card={item}
-                      front={d === 0}
-                      style={{
-                        width: CARD_W,
-                        transform: gone
-                          ? `translateX(${-CARD_W - 48}px) rotate(-6deg)`
-                          : `translateX(${d * STEP}px)`,
-                        opacity: gone ? 0 : Math.max(0.32, 1 - d * 0.1),
-                        zIndex: VISIBLE + 2 - d,
-                      }}
-                    />
-                  )
-                })}
-              </div>
-            </div>
-          )}
+          {/* The query, being written. It is the payoff of the whole block:
+              the answers are only worth giving if you can watch them turn
+              into something the search will actually run. */}
+          <aside className="flex min-w-0 flex-col items-start gap-[12px]">
+            <h3 className="text-[12px]/[18px] uppercase tracking-[0.12em] text-v3-faint">
+              Ce a înțeles
+            </h3>
+            {read.labels.length ? (
+              <ul className="flex flex-wrap gap-[6px]">
+                {read.labels.map((label) => (
+                  <li
+                    key={label}
+                    className="rounded-[6px] bg-v3-ai/14 px-[8px] py-[3px] text-[11px]/[17px] font-medium uppercase tracking-[0.06em] text-v3-ai"
+                  >
+                    {label}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-[13px]/[19px] text-v3-faint">
+                Încă nimic. Primul „da" e de ajuns.
+              </p>
+            )}
+
+            <button
+              type="button"
+              disabled={!read.phrase}
+              onClick={() => s.ask(read.phrase)}
+              className="mt-[4px] rounded-[100px] bg-v3-ai px-[18px] py-[11px] text-[13px]/[19px] font-bold text-black transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:bg-white/8 disabled:text-v3-faint"
+            >
+              Caută după gusturile mele
+            </button>
+          </aside>
         </div>
       </div>
     </section>
@@ -202,7 +205,7 @@ function Poster({
       aria-hidden={!front}
       className={`absolute inset-y-0 left-0 overflow-hidden rounded-[12px] bg-v3-raised transition-[transform,opacity] duration-[320ms] ease-out ${
         front
-          ? 'shadow-[0_20px_44px_rgba(0,0,0,0.6)] ring-2 ring-v3-ai/70'
+          ? 'shadow-[0_20px_44px_rgba(0,0,0,0.6)] ring-2 ring-inset ring-v3-ai'
           : 'shadow-[0_12px_28px_rgba(0,0,0,0.5)]'
       }`}
     >
