@@ -249,8 +249,22 @@ over; until then this is the trade.
 
 ### The hook: describe it, don't name it
 
-The field in the header expands into a full-width panel — heading, example
-phrases, live results with a one-line "vibe" descriptor each, and a total count.
+The field in the header expands into a full-width panel built so one thing is
+obviously happening: the phrase and what to do with it next on the left, the
+answer on the right, nothing competing with either.
+
+- **The results carry their own header** — the count, then *Potriviri pentru
+  „…"* — so they read as an answer to the phrase rather than a separate list.
+- **The chips are the next move, not decoration.** Example phrases before a
+  search; after one, narrowings generated from the facets the current matches
+  actually carry, minus what the phrase already says. Every chip changes the
+  result set and none leads to an empty screen.
+- **Every result says why it matched** — `Toamnă`, `Anii 90`, `Scurt`. An
+  assistant that cannot explain itself is a filter with a nicer font. On hover
+  the reasons swap for the actions, including *Altele ca acesta*, which reuses
+  the title as the next query so a viewer can steer without typing.
+- **Loading, empty and no-match are designed**, not left to the ideal state:
+  skeleton rows while it thinks, and a suggested phrase when nothing fits.
 
 It genuinely answers. `src/v3ai/search.ts` indexes the real catalogue (every
 rail, every channel, every live event), derives tags from each title and from

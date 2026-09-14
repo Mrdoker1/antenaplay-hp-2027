@@ -52,8 +52,15 @@ export type Hit = {
   art: string | null
   /** the one-line descriptor shown under the title */
   vibe: string
+  /** why this matched, in the viewer's words. An assistant that cannot say why
+   *  it chose something is indistinguishable from a filter. */
+  reasons: string[]
   score: number
 }
+
+/** A narrowing the viewer can add to the phrase. Offered only when it would
+ *  actually change the result set — see `refinements`. */
+export type Refinement = { label: string; append: string }
 
 /* ── what a viewer might type ─────────────────────────────────────────────
    Tags are the shared vocabulary between the two corpora: a Kinopoisk genre
@@ -208,6 +215,61 @@ const GENRE_LABEL: Record<string, string> = {
   вестерн: 'Western',
   документальный: 'Documentar',
   короткометражка: 'Scurtmetraj',
+}
+
+const TAG_LABEL: Record<string, string> = {
+  action: 'Acțiune',
+  adventure: 'Aventură',
+  comedy: 'Comedie',
+  drama: 'Dramă',
+  thriller: 'Thriller',
+  horror: 'Groază',
+  crime: 'Crimă',
+  detective: 'Mister',
+  scifi: 'SF',
+  fantasy: 'Fantezie',
+  romance: 'Romantic',
+  family: 'Familie',
+  animation: 'Animație',
+  history: 'Istorie',
+  war: 'Război',
+  biography: 'Biografie',
+  sport: 'Sport',
+  musical: 'Muzical',
+  western: 'Western',
+  documentary: 'Documentar',
+  reality: 'Reality',
+  series: 'Serial',
+  film: 'Film',
+  short: 'Scurt',
+  live: 'În direct',
+  channel: 'Canal',
+  free: 'Gratuit',
+  fresh: 'Nou',
+  local: 'Românesc',
+}
+
+const MOOD_LABEL: Record<string, string> = {
+  autumn: 'Toamnă',
+  cosy: 'Cozy',
+  feelgood: 'Bine dispus',
+  mindbending: 'Cu răsturnări',
+  epic: 'Epic',
+  dark: 'Întunecat',
+}
+
+const COUNTRY_LABEL: Record<string, string> = {
+  США: 'SUA',
+  Россия: 'Rusia',
+  СССР: 'URSS',
+  Великобритания: 'Marea Britanie',
+  Франция: 'Franța',
+  Германия: 'Germania',
+  Япония: 'Japonia',
+  Италия: 'Italia',
+  Испания: 'Spania',
+  Китай: 'China',
+  Корея: 'Coreea',
 }
 
 const COUNTRY_WORDS: Record<string, string[]> = {
@@ -469,6 +531,7 @@ export function search(query: string, limit = 6): Hit[] {
 
   const hits: Hit[] = []
   for (const entry of INDEX) {
+    const reasons: string[] = []
     // Naming a country or a decade is a constraint, not a preference: "french
     // drama" that answers with Danish films is not answering.
     if (q.countries.length && !q.countries.some((c) => entry.countries.includes(c))) continue
@@ -489,7 +552,12 @@ export function search(query: string, limit = 6): Hit[] {
       if (boundary) score += at === 0 ? 8 : 6
       else if (tok.length >= 6) score += 2
     }
-    for (const tag of q.tags) if (entry.tags.includes(tag)) score += TAG_WEIGHT[tag] ?? 2
+    for (const tag of q.tags) {
+      if (!entry.tags.includes(tag)) continue
+      score += TAG_WEIGHT[tag] ?? 2
+      const label = TAG_LABEL[tag]
+      if (label && !reasons.includes(label)) reasons.push(label)
+    }
 
     for (const name of q.moods) {
       const mood = MOODS[name]
@@ -499,14 +567,25 @@ export function search(query: string, limit = 6): Hit[] {
       if (rank === 0) score += 34
       else if (rank > 0) score += 22 - rank * 2
       else if (entry.moods.includes(name)) score += 5
+      else continue
+      const label = MOOD_LABEL[name]
+      if (label && !reasons.includes(label)) reasons.unshift(label)
     }
 
-    if (q.decade !== undefined && entry.year !== undefined) score += 6
+    if (q.decade !== undefined && entry.year !== undefined) {
+      score += 6
+      reasons.push(`Anii ${String(q.decade).slice(2)}`)
+    }
     if (q.year && entry.year !== undefined) {
       const gap = Math.abs(entry.year - q.year)
       score += gap === 0 ? 10 : gap <= 2 ? 4 : -2
     }
-    for (const country of q.countries) if (entry.countries.includes(country)) score += 8
+    for (const country of q.countries) {
+      if (!entry.countries.includes(country)) continue
+      score += 8
+      const label = COUNTRY_LABEL[country]
+      if (label && !reasons.includes(label)) reasons.push(label)
+    }
 
     if (q.tags.length > 1) {
       const covered = q.tags.filter((t) => entry.tags.includes(t)).length
@@ -521,7 +600,14 @@ export function search(query: string, limit = 6): Hit[] {
     if (entry.kind === 'channel' && !wantsChannel) score *= 0.35
     if (entry.art) score += 0.5
 
-    hits.push({ title: entry.title, year: entry.year, art: entry.art, vibe: entry.vibe, score })
+    hits.push({
+      title: entry.title,
+      year: entry.year,
+      art: entry.art,
+      vibe: entry.vibe,
+      reasons: reasons.slice(0, 2),
+      score,
+    })
   }
 
   return hits
@@ -535,6 +621,44 @@ export function search(query: string, limit = 6): Hit[] {
     .slice(0, limit)
 }
 
+/** Narrowings worth offering for this phrase.
+ *
+ *  Generated from the facets the current matches actually carry, minus what the
+ *  phrase already says — so every chip changes the result set and none of them
+ *  lead to an empty screen. That is the difference between a refinement and a
+ *  guess. */
+export function refinements(query: string, limit = 4): Refinement[] {
+  const q = parse(query)
+  if (!q.tokens.length && q.decade === undefined) return []
+
+  const matches = INDEX.filter(
+    (e) =>
+      q.tokens.some((t) => t.length >= 4 && e.folded.includes(t)) ||
+      q.tags.some((t) => e.tags.includes(t)) ||
+      q.moods.some((m) => e.moods.includes(m)),
+  )
+  if (matches.length < 3) return []
+
+  const counts = new Map<string, number>()
+  for (const e of matches) for (const t of e.tags) counts.set(t, (counts.get(t) ?? 0) + 1)
+
+  const asked = new Set(q.tags)
+  const out: Refinement[] = []
+  for (const [tag, n] of [...counts.entries()].sort((a, b) => b[1] - a[1])) {
+    if (asked.has(tag) || !TAG_LABEL[tag]) continue
+    // a facet everything shares narrows nothing, and one almost nothing shares
+    // is a dead end
+    if (n >= matches.length * 0.9 || n < 3) continue
+    out.push({ label: TAG_LABEL[tag], append: TAG_LABEL[tag].toLowerCase() })
+    if (out.length >= limit) break
+  }
+
+  if (q.decade === undefined && out.length < limit) {
+    out.push({ label: "Anii '90", append: '90s' })
+  }
+  return out.slice(0, limit)
+}
+
 /** Total matches, so the panel can offer the rest. */
 export function countMatches(query: string): number {
   const q = parse(query)
@@ -546,6 +670,13 @@ export function countMatches(query: string): number {
       q.moods.some((m) => e.moods.includes(m)) ||
       (q.decade !== undefined && e.year !== undefined && e.year >= q.decade && e.year < q.decade + 10),
   ).length
+}
+
+/** What the search actually covers. Shown in the panel because "it searches
+ *  the catalogue" is a claim, and a number is a fact. */
+export const stats = {
+  films: INDEX.filter((e) => e.kind === 'film').length,
+  shows: INDEX.filter((e) => e.kind !== 'film').length,
 }
 
 /** Example phrases, shown as chips. Each one returns results. */
