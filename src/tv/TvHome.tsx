@@ -401,7 +401,11 @@ export default function TvHome() {
             onScroll={(e) => setScrolled(e.currentTarget.scrollTop > 4)}
             style={{
               paddingLeft: 'calc(var(--tv-rail) + var(--tv-safe) - 26px)',
-              paddingRight: 'calc(var(--tv-safe) - 26px)',
+              /* No safe-area inset on this side: a rail that stops short of
+                 the edge reads as a row that has ended, and the last card
+                 sitting in its own margin looks like a mistake. Running off
+                 the screen is what says there is more to the right. */
+              paddingRight: 0,
               /* The row above the focused one is sliced by the scrollport, and
                  the slice — card bottoms and their progress bars — lands right
                  under the hero's buttons. Hiding it has to be a mask on the

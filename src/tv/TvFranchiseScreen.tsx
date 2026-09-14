@@ -81,7 +81,11 @@ export function TvFranchiseScreen({
           className="tv-no-scrollbar h-full overflow-y-auto py-[30px]"
           style={{
             paddingLeft: 'calc(var(--tv-rail) + var(--tv-safe) - 26px)',
-            paddingRight: 'calc(var(--tv-safe) - 26px)',
+            /* No safe-area inset on this side: a rail that stops short of
+               the edge reads as a row that has ended, and the last card
+               sitting in its own margin looks like a mistake. Running off
+               the screen is what says there is more to the right. */
+            paddingRight: 0,
             // the row above the fold is sliced by the scrollport; let it
             // dissolve instead of ending on a straight cut
             maskImage: 'linear-gradient(to bottom, transparent 0, #000 26px)',

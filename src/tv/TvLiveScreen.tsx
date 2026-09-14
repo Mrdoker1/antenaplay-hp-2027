@@ -44,7 +44,11 @@ export function TvLiveScreen({ active, onOpenMenu }: { active: boolean; onOpenMe
       className="absolute inset-0 z-20 flex flex-col bg-tv-ground"
       style={{
         paddingLeft: 'calc(var(--tv-rail) + var(--tv-safe) - 26px)',
-        paddingRight: 'calc(var(--tv-safe) - 26px)',
+        /* No safe-area inset on this side: a rail that stops short of the
+           edge reads as a row that has ended, and the last card sitting in
+           its own margin looks like a mistake. Running off the screen is
+           what says there is more to the right. */
+        paddingRight: 0,
       }}
     >
       <div className="shrink-0 px-[26px] pt-[34px]">
