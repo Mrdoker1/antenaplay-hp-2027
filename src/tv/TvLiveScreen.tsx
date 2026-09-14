@@ -105,7 +105,7 @@ export function TvLiveScreen({ active, onOpenMenu }: { active: boolean; onOpenMe
               const focused = focus.row === 0 && focus.col === i
               return (
                 <div key={c.name} className="shrink-0">
-                  <TvChannelTile channel={c} focused={focused} width={232} cell={`0,${i}`} />
+                  <TvChannelTile channel={c} focused={focused} cell={`0,${i}`} />
                   {/* the two things only a broadcaster can offer, on the channel
                       you are standing on */}
                   {/* clear of the focus ring: outline 4 + offset 4 + the 8px

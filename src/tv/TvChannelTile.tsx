@@ -22,7 +22,10 @@ import type { ChannelItem } from '../v2027/catalog'
 export function TvChannelTile({
   channel,
   focused,
-  width = 232,
+  /* Wide enough that a channel's programme line and its name both fit whole:
+     at 232 the extra breathing room inside cost "Asia Express NonStop" its
+     last word, and a name that needs an ellipsis is not a name. */
+  width = 246,
   cell,
 }: {
   channel: ChannelItem
@@ -63,25 +66,25 @@ export function TvChannelTile({
             alt={channel.name}
             loading="lazy"
             decoding="async"
-            className={`absolute right-[12px] top-[12px] size-[62px] rounded-[12px] bg-black/45 object-contain p-[9px] transition-opacity duration-200 ${
+            className={`absolute right-[14px] top-[14px] size-[62px] rounded-[12px] bg-black/45 object-contain p-[9px] transition-opacity duration-200 ${
               focused ? 'opacity-100' : 'opacity-80'
             }`}
           />
         )}
 
         {channel.badge === 'live' && (
-          <span className="absolute left-[12px] top-[12px] flex items-center gap-[6px] rounded-[6px] bg-tv-action px-[9px] py-[3px] font-meta text-[14px]/[18px] uppercase tracking-[0.1em]">
+          <span className="absolute left-[14px] top-[14px] flex items-center gap-[6px] rounded-[6px] bg-tv-action px-[9px] py-[3px] font-meta text-[14px]/[18px] uppercase tracking-[0.1em]">
             <span className="size-[7px] rounded-full bg-white" />
             Live
           </span>
         )}
         {channel.badge === 'free' && (
-          <span className="absolute left-[12px] top-[12px] rounded-[6px] bg-white/85 px-[9px] py-[3px] font-meta text-[14px]/[18px] uppercase tracking-[0.1em] text-tv-ground">
+          <span className="absolute left-[14px] top-[14px] rounded-[6px] bg-white/85 px-[9px] py-[3px] font-meta text-[14px]/[18px] uppercase tracking-[0.1em] text-tv-ground">
             Gratuit
           </span>
         )}
 
-        <div className="absolute inset-x-0 bottom-0 p-[14px]">
+        <div className="absolute inset-x-0 bottom-0 p-[17px]">
           <p
             className={`line-clamp-1 text-[20px]/[26px] font-semibold transition-colors duration-200 ${
               focused ? 'text-tv-fg' : 'text-tv-fg/80'
@@ -89,9 +92,12 @@ export function TvChannelTile({
           >
             {tidyTitle(channel.name)}
           </p>
-          <p className="mt-[2px] truncate font-meta text-[16px]/[22px] uppercase tracking-[0.1em] text-tv-dim">
-            {channel.now}
-          </p>
+          {/* Sentence case, not the meta face in caps. Caps is for a label —
+              "LIVE", "GRATUIT" — and this is a sentence: a programme name and
+              a time. Set as a label it shouts, loses its own capitals, and
+              runs out of room sooner, which is how "Insula Iubirii · S10 E14"
+              became "INSULA IUBIRII · …". */}
+          <p className="mt-[4px] truncate text-[16px]/[22px] text-tv-dim">{channel.now}</p>
         </div>
       </div>
     </div>
