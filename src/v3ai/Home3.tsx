@@ -9,6 +9,7 @@ import { Footer3 } from './Footer3'
 import { HeaderBar } from './HeaderBar'
 import { Hero3 } from './Hero3'
 import { LeftRail } from './LeftRail'
+import { SearchResults } from './SearchResults'
 import { useSmartSearch } from './useSmartSearch'
 
 /** AntenaPLAY home page — 2027 · AI.
@@ -49,96 +50,104 @@ export default function Home3() {
       <LeftRail active={smart.open ? 'search' : section} onNavigate={navigate} locked={smart.open} />
       <HeaderBar s={smart} />
 
-      <main className="pb-[20px]">
-        <Hero3 />
+      {/* A committed phrase gets a page of its own. The panel answers while you
+          type; this is what that answer becomes when you press Enter. */}
+      {smart.expanded ? (
+        <main>
+          <SearchResults s={smart} />
+        </main>
+      ) : (
+        <main className="pb-[20px]">
+          <Hero3 />
 
-        <div className="v2027 bg-transparent ps-[var(--v3-rail)]">
-          <Row title="Continuă de unde ai rămas" itemPitch={248} seeAll={false}>
-            {rows.continueWatching.map((item, i) => (
-              <TitleCard key={`${item.title}-${i}`} item={item} />
-            ))}
-          </Row>
+          <div className="v2027 bg-transparent ps-[var(--v3-rail)]">
+            <Row title="Continuă de unde ai rămas" itemPitch={248} seeAll={false}>
+              {rows.continueWatching.map((item, i) => (
+                <TitleCard key={`${item.title}-${i}`} item={item} />
+              ))}
+            </Row>
 
-          {/* Live and the channel wall stay on the first screen. The ordering
-              principle is "what we are offering, then what is trending" — and
-              for a broadcaster what is on air right now is the offer. Pushing
-              it below Top 10 would hand the one thing Netflix cannot copy to
-              the bottom of the page. */}
-          <LiveRow2027 />
+            {/* Live and the channel wall stay on the first screen. The ordering
+                principle is "what we are offering, then what is trending" — and
+                for a broadcaster what is on air right now is the offer. Pushing
+                it below Top 10 would hand the one thing Netflix cannot copy to
+                the bottom of the page. */}
+            <LiveRow2027 />
 
-          <Row title="Canale TV" itemPitch={302}>
-            {channelsTv.map((channel, i) => (
-              <ChannelTile key={`${channel.name}-${i}`} channel={channel} />
-            ))}
-          </Row>
+            <Row title="Canale TV" itemPitch={302}>
+              {channelsTv.map((channel, i) => (
+                <ChannelTile key={`${channel.name}-${i}`} channel={channel} />
+              ))}
+            </Row>
 
-          <Row title="Trending în AntenaPLAY" itemPitch={248}>
-            {rows.trending.map((item, i) => (
-              <TitleCard key={`${item.title}-${i}`} item={item} />
-            ))}
-          </Row>
+            <Row title="Trending în AntenaPLAY" itemPitch={248}>
+              {rows.trending.map((item, i) => (
+                <TitleCard key={`${item.title}-${i}`} item={item} />
+              ))}
+            </Row>
 
-          <TopTen2027 title="Top 10 în România" items={rows.top10} />
+            <TopTen2027 title="Top 10 în România" items={rows.top10} />
 
-          <Row title="AntenaPLAY Sport" itemPitch={248}>
-            {rows.sport.map((item, i) => (
-              <TitleCard key={`${item.title}-${i}`} item={item} />
-            ))}
-          </Row>
+            <Row title="AntenaPLAY Sport" itemPitch={248}>
+              {rows.sport.map((item, i) => (
+                <TitleCard key={`${item.title}-${i}`} item={item} />
+              ))}
+            </Row>
 
-          <Row title="În curând" itemPitch={248}>
-            {rows.inCurand.map((item, i) => (
-              <TitleCard key={`${item.title}-${i}`} item={item} />
-            ))}
-          </Row>
+            <Row title="În curând" itemPitch={248}>
+              {rows.inCurand.map((item, i) => (
+                <TitleCard key={`${item.title}-${i}`} item={item} />
+              ))}
+            </Row>
 
-          <Row title="Momente nedifuzate la TV" itemPitch={248}>
-            {rows.extras.map((item, i) => (
-              <TitleCard key={`${item.title}-${i}`} item={item} />
-            ))}
-          </Row>
+            <Row title="Momente nedifuzate la TV" itemPitch={248}>
+              {rows.extras.map((item, i) => (
+                <TitleCard key={`${item.title}-${i}`} item={item} />
+              ))}
+            </Row>
 
-          <Row title="Filme și seriale noi" itemPitch={248}>
-            {rows.filmeSerialeNoi.map((item, i) => (
-              <TitleCard key={`${item.title}-${i}`} item={item} />
-            ))}
-          </Row>
+            <Row title="Filme și seriale noi" itemPitch={248}>
+              {rows.filmeSerialeNoi.map((item, i) => (
+                <TitleCard key={`${item.title}-${i}`} item={item} />
+              ))}
+            </Row>
 
-          <TopTen2027 title="Top filme" items={rows.topFilme} />
+            <TopTen2027 title="Top filme" items={rows.topFilme} />
 
-          <Row title="Insula Iubirii · universul complet" itemPitch={248}>
-            {rows.insulaRomania.map((item, i) => (
-              <TitleCard key={`${item.title}-${i}`} item={item} />
-            ))}
-          </Row>
+            <Row title="Insula Iubirii · universul complet" itemPitch={248}>
+              {rows.insulaRomania.map((item, i) => (
+                <TitleCard key={`${item.title}-${i}`} item={item} />
+              ))}
+            </Row>
 
-          <Row title="Asia & America Express" itemPitch={248}>
-            {rows.asiaAmerica.map((item, i) => (
-              <TitleCard key={`${item.title}-${i}`} item={item} />
-            ))}
-          </Row>
+            <Row title="Asia & America Express" itemPitch={248}>
+              {rows.asiaAmerica.map((item, i) => (
+                <TitleCard key={`${item.title}-${i}`} item={item} />
+              ))}
+            </Row>
 
-          <TopTen2027 title="Top seriale" items={rows.topSeriale} />
+            <TopTen2027 title="Top seriale" items={rows.topSeriale} />
 
-          <Row title="Power Couple România" itemPitch={248}>
-            {rows.powerCouple.map((item, i) => (
-              <TitleCard key={`${item.title}-${i}`} item={item} />
-            ))}
-          </Row>
+            <Row title="Power Couple România" itemPitch={248}>
+              {rows.powerCouple.map((item, i) => (
+                <TitleCard key={`${item.title}-${i}`} item={item} />
+              ))}
+            </Row>
 
-          <Row title="Top show-uri TV" itemPitch={248}>
-            {rows.topShowuri.map((item, i) => (
-              <TitleCard key={`${item.title}-${i}`} item={item} />
-            ))}
-          </Row>
+            <Row title="Top show-uri TV" itemPitch={248}>
+              {rows.topShowuri.map((item, i) => (
+                <TitleCard key={`${item.title}-${i}`} item={item} />
+              ))}
+            </Row>
 
-          <Row title="Canale gratuite" itemPitch={302}>
-            {channelsFree.map((channel, i) => (
-              <ChannelTile key={`${channel.name}-${i}`} channel={channel} />
-            ))}
-          </Row>
-        </div>
-      </main>
+            <Row title="Canale gratuite" itemPitch={302}>
+              {channelsFree.map((channel, i) => (
+                <ChannelTile key={`${channel.name}-${i}`} channel={channel} />
+              ))}
+            </Row>
+          </div>
+        </main>
+      )}
 
       <Footer3 />
     </div>

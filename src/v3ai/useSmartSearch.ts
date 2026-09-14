@@ -12,7 +12,16 @@ export type SmartSearch = {
   /** phrase the current results answer — trails `query` by one beat */
   settled: string
   hits: Hit[]
+  /** the full page of results, once the phrase has been committed */
+  all: Hit[]
   total: number
+  /** Enter commits the phrase and opens the results page. Without it the panel
+   *  is the only answer the search ever gives, and a phrase typed and confirmed
+   *  appears to do nothing — which is exactly how a working search gets read as
+   *  a stub. */
+  expanded: boolean
+  setExpanded: (v: boolean) => void
+  commit: () => void
   thinking: boolean
   open: boolean
   setOpen: (v: boolean) => void
@@ -32,7 +41,13 @@ export function useSmartSearch(): SmartSearch {
     return () => clearTimeout(t)
   }, [query])
 
+  const [committed, setExpanded] = useState(false)
+  /* Reopening the panel to type a new phrase puts the page back — derived
+     rather than set from an effect, so there is no render where the page shows
+     results for a phrase that has already been typed over. */
+  const expanded = committed && !open
   const hits = useMemo<Hit[]>(() => (settled ? search(settled, 6) : []), [settled])
+  const all = useMemo<Hit[]>(() => (expanded && settled ? search(settled, 30) : []), [expanded, settled])
   const total = useMemo(() => (settled ? countMatches(settled) : 0), [settled])
   const thinking = query.trim() !== settled
 
@@ -49,7 +64,10 @@ export function useSmartSearch(): SmartSearch {
         e.preventDefault()
         setOpen(true)
       }
-      if (e.key === 'Escape') setOpen(false)
+      if (e.key === 'Escape') {
+        setOpen(false)
+        setExpanded(false)
+      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -60,5 +78,26 @@ export function useSmartSearch(): SmartSearch {
     inputRef.current?.focus()
   }, [])
 
-  return { query, setQuery, settled, hits, total, thinking, open, setOpen, pick, inputRef }
+  const commit = useCallback(() => {
+    if (!inputRef.current?.value.trim()) return
+    setExpanded(true)
+    setOpen(false)
+  }, [])
+
+  return {
+    query,
+    setQuery,
+    settled,
+    hits,
+    all,
+    total,
+    thinking,
+    open,
+    setOpen,
+    expanded,
+    setExpanded,
+    commit,
+    pick,
+    inputRef,
+  }
 }

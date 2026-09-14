@@ -103,7 +103,7 @@ export function HeaderBar({ s }: { s: SmartSearch }) {
 }
 
 function SearchField({ s }: { s: SmartSearch }) {
-  const { open, setOpen, query, setQuery, thinking, inputRef } = s
+  const { open, setOpen, query, setQuery, thinking, commit, inputRef } = s
 
   return (
     <div
@@ -117,6 +117,12 @@ function SearchField({ s }: { s: SmartSearch }) {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onFocus={() => setOpen(true)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault()
+            commit()
+          }
+        }}
         placeholder="Descrie ce vrei să vezi..."
         aria-label="Căutare AI în catalog"
         aria-expanded={open}

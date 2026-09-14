@@ -96,7 +96,9 @@ const VOCAB: Record<string, string[]> = {
   series: ['series', 'season', 'seasons', 'episode', 'episodes', 'serial', 'seriale', 'sezon', 'sezonul', 'episod'],
   film: ['film', 'films', 'movie', 'movies', 'feature', 'filme'],
   short: ['short', 'clip', 'clips', 'quick', 'moment', 'moments', 'scurt', 'scurte', 'rapid', 'momente'],
-  live: ['live', 'now', 'tonight', 'airing', 'onair', 'direct', 'acum', 'diseara', 'seara'],
+  // "diseară" is tonight and does imply what is on; bare "seara" is just an
+  // evening — it turned "o seară în familie" into a live-TV query
+  live: ['live', 'now', 'tonight', 'airing', 'onair', 'direct', 'acum', 'diseara'],
   channel: ['channel', 'channels', 'canal', 'canale'],
   free: ['free', 'gratuit', 'gratuite'],
   fresh: ['new', 'newest', 'recent', 'latest', 'upcoming', 'soon', 'nou', 'noi', 'noua', 'curand', 'proaspat'],
@@ -657,6 +659,22 @@ export function refinements(query: string, limit = 4): Refinement[] {
     out.push({ label: "Anii '90", append: '90s' })
   }
   return out.slice(0, limit)
+}
+
+/** The phrase as the search actually read it, in the interface's language.
+ *  An assistant that cannot show its reading is indistinguishable from one
+ *  that guessed, and a wrong answer becomes debuggable by the person who typed
+ *  the phrase rather than mysterious. */
+export function reading(query: string): string[] {
+  const q = parse(query)
+  const out = [
+    ...q.moods.map((m) => MOOD_LABEL[m]),
+    ...q.tags.map((t) => TAG_LABEL[t]),
+    ...q.countries.map((c) => COUNTRY_LABEL[c]),
+  ].filter(Boolean)
+  if (q.decade !== undefined) out.push(`Anii ${String(q.decade).slice(2)}`)
+  if (q.year !== undefined) out.push(String(q.year))
+  return [...new Set(out)]
 }
 
 /** Total matches, so the panel can offer the rest. */
