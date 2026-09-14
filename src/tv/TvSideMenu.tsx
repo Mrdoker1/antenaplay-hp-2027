@@ -35,11 +35,13 @@ export function TvSideMenu({
           layer of its own because the falloff has to run past the panel's own
           width — kept inside, the fade would start under the labels and the
           artwork would come through the words, and the panel still has to clip
-          the labels it is too narrow for while collapsed. */}
+          the labels it is too narrow for while collapsed. Collapsed, the whole
+          falloff fits inside the strip: any tail past it dims the start of the
+          hero, and there is nothing on that edge for it to soften. */}
       <span
         aria-hidden
         className={`pointer-events-none absolute inset-y-0 left-0 z-40 transition-[width] duration-300 ${
-          open ? 'w-[418px]' : 'w-[calc(var(--tv-rail)+88px)]'
+          open ? 'w-[418px]' : 'w-[var(--tv-rail)]'
         }`}
         style={{
           backgroundImage:
