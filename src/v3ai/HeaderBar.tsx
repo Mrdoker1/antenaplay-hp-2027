@@ -2,7 +2,6 @@ import { createPortal } from 'react-dom'
 import mark from '../assets/antena-mark.svg'
 import { IconSparkle } from './icons'
 import { SearchPanel } from './SearchPanel'
-import { Sparks } from './Sparks'
 import type { SmartSearch } from './useSmartSearch'
 
 const SECTIONS = ['Emisiuni', 'Seriale', 'Filme', 'Genuri']
@@ -112,10 +111,20 @@ function SearchField({ s }: { s: SmartSearch }) {
         open ? 'v3-ai-ring' : 'bg-white/6 hover:bg-white/10'
       }`}
     >
-      {/* Only while it has the field: motes drifting around a control nobody
-          is using is decoration, and the same motes around one that is waiting
-          on you are the thing telling you it is. */}
-      {open && <Sparks className="overflow-hidden rounded-[100px]" />}
+      {/* Only once it is open. Closed, this is one control among several in a
+          header and it should sit still like the rest of them; open, it is the
+          whole page's subject and has to look like something you can talk to
+          rather than a text box. Motes were the first attempt at saying that
+          and they read as specks on the screen — weather under the placeholder
+          is what reads as alive. */}
+      {open && (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 overflow-hidden rounded-[100px]"
+        >
+          <span className="v3-ai-wash absolute inset-0" />
+        </span>
+      )}
       <IconSparkle className={`size-[20px] shrink-0 text-v3-fg ${thinking ? 'v3-thinking' : ''}`} />
       <input
         ref={inputRef}
