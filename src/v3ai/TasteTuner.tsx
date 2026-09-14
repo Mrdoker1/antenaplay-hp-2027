@@ -142,6 +142,11 @@ export function TasteTuner({ s, onClose }: { s: SmartSearch; onClose: () => void
                 backgroundImage: `linear-gradient(to right, transparent ${PAD + CARD_W + 8}px, rgba(8,8,11,0.6) ${PAD + CARD_W + 54}px, rgba(8,8,11,0.9) 100%)`,
               }}
             />
+
+            {/* Over the column, not over the card. A screened glow adds light,
+                and there is none to add on a poster that is already bright —
+                laid across the whole pile it has the dark half to show in. */}
+            <Sparks className="z-50" />
           </div>
 
           <div className="min-w-0 pe-[20px]">
@@ -252,13 +257,10 @@ function Poster({
       >
         {art && <img src={art} alt="" draggable={false} className="size-full object-cover" />}
         {front && (
-          <>
-            <Sparks />
-            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-[10px] pt-[36px]">
-              <p className="truncate text-[13px]/[18px] font-bold">{card.title}</p>
-              <p className="truncate text-[11px]/[16px] text-v3-dim">{card.vibe}</p>
-            </div>
-          </>
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-[10px] pt-[36px]">
+            <p className="truncate text-[13px]/[18px] font-bold">{card.title}</p>
+            <p className="truncate text-[11px]/[16px] text-v3-dim">{card.vibe}</p>
+          </div>
         )}
       </div>
     </div>

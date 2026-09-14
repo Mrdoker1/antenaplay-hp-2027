@@ -29,15 +29,15 @@ type Mote = {
 }
 
 const MOTES: Mote[] = [
-  { x: 4, y: 62, dx: 14, dy: -30, size: 11, dur: 5.4, delay: 0 },
-  { x: 17, y: 84, dx: -9, dy: -38, size: 7, dur: 6.8, delay: 1.6 },
-  { x: 29, y: 46, dx: 11, dy: -26, size: 8, dur: 4.9, delay: 3.1 },
-  { x: 41, y: 88, dx: -6, dy: -44, size: 13, dur: 7.4, delay: 0.7 },
-  { x: 54, y: 58, dx: 16, dy: -32, size: 7, dur: 5.9, delay: 2.4 },
-  { x: 66, y: 90, dx: -12, dy: -40, size: 12, dur: 6.3, delay: 4.2 },
-  { x: 77, y: 52, dx: 8, dy: -28, size: 8, dur: 5.1, delay: 1.1 },
-  { x: 88, y: 82, dx: -14, dy: -36, size: 10, dur: 7.1, delay: 3.6 },
-  { x: 95, y: 60, dx: 7, dy: -24, size: 7, dur: 6.1, delay: 5.0 },
+  { x: 4, y: 62, dx: 14, dy: -30, size: 34, dur: 5.4, delay: 0 },
+  { x: 17, y: 84, dx: -9, dy: -38, size: 22, dur: 6.8, delay: 1.6 },
+  { x: 29, y: 46, dx: 11, dy: -26, size: 26, dur: 4.9, delay: 3.1 },
+  { x: 41, y: 88, dx: -6, dy: -44, size: 42, dur: 7.4, delay: 0.7 },
+  { x: 54, y: 58, dx: 16, dy: -32, size: 24, dur: 5.9, delay: 2.4 },
+  { x: 66, y: 90, dx: -12, dy: -40, size: 38, dur: 6.3, delay: 4.2 },
+  { x: 77, y: 52, dx: 8, dy: -28, size: 28, dur: 5.1, delay: 1.1 },
+  { x: 88, y: 82, dx: -14, dy: -36, size: 32, dur: 7.1, delay: 3.6 },
+  { x: 95, y: 60, dx: 7, dy: -24, size: 23, dur: 6.1, delay: 5.0 },
 ]
 
 export function Sparks({ className = '' }: { className?: string }) {
@@ -52,14 +52,20 @@ export function Sparks({ className = '' }: { className?: string }) {
              screened rather than laid on top, so it adds light instead of
              painting violet over whatever it crosses — over a bright poster a
              blurred violet disc is a smudge, the same disc screened is a
-             gleam. */
-          className="v3-spark absolute rounded-full bg-v3-ai/80 mix-blend-screen blur-[4px]"
+             gleam. Blurred far past the point where the disc is still a disc:
+             what should drift across the field is light with no edge to it,
+             and a mote you can find the rim of is a dot on the glass. */
+          className="v3-spark absolute rounded-full bg-v3-ai/45 mix-blend-screen blur-[16px]"
           style={
             {
               left: `${m.x}%`,
               top: `${m.y}%`,
               width: m.size,
               height: m.size,
+              /* Centred on its point with margins, not a translate: the
+                 keyframes own `transform` outright and would drop it. */
+              marginLeft: -m.size / 2,
+              marginTop: -m.size / 2,
               '--v3-dx': `${m.dx}px`,
               '--v3-dy': `${m.dy}px`,
               '--v3-dur': `${m.dur}s`,
