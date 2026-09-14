@@ -28,33 +28,12 @@ export function TvSideMenu({
   onPick?: (i: number) => void
 }) {
   return (
-    <>
-      {/* The panel has no right edge: it is solid at the screen edge and gone
-          by the time it reaches the content, so it reads as that side of the
-          screen getting heavier rather than as a slab laid over it. It is a
-          layer of its own because the falloff has to run past the panel's own
-          width — kept inside, the fade would start under the labels and the
-          artwork would come through the words, and the panel still has to clip
-          the labels it is too narrow for while collapsed. Collapsed, the whole
-          falloff fits inside the strip: any tail past it dims the start of the
-          hero, and there is nothing on that edge for it to soften. */}
-      <span
-        aria-hidden
-        className={`pointer-events-none absolute inset-y-0 left-0 z-40 transition-[width] duration-300 ${
-          open ? 'w-[418px]' : 'w-[var(--tv-rail)]'
-        }`}
-        style={{
-          backgroundImage:
-            'linear-gradient(to right, var(--color-tv-panel) 0%, var(--color-tv-panel) 42%, rgba(16,16,22,0.82) 62%, rgba(16,16,22,0.4) 82%, transparent 100%)',
-        }}
-      />
-
-      <nav
-        className={`absolute inset-y-0 left-0 z-40 flex flex-col overflow-hidden transition-[width] duration-300 ${
-          open ? 'w-[268px]' : 'w-[var(--tv-rail)]'
-        }`}
-      >
-      <span className="relative flex h-[96px] shrink-0 items-center gap-[9px] ps-[24px]">
+    <nav
+      className={`absolute inset-y-0 left-0 z-40 flex flex-col overflow-hidden bg-tv-panel/94 backdrop-blur-xl transition-[width] duration-300 ${
+        open ? 'w-[268px]' : 'w-[var(--tv-rail)]'
+      }`}
+    >
+      <span className="flex h-[96px] shrink-0 items-center gap-[9px] ps-[24px]">
         <img src={mark} alt="" className="h-[26px] w-auto shrink-0" />
         <span
           className={`whitespace-nowrap text-[24px]/[28px] font-black tracking-[-0.03em] transition-opacity duration-200 ${
@@ -65,7 +44,7 @@ export function TvSideMenu({
         </span>
       </span>
 
-      <div className="relative flex flex-1 flex-col justify-center gap-[6px]">
+      <div className="flex flex-1 flex-col justify-center gap-[6px]">
       {MENU.map(({ key, label, Icon }, i) => {
         const focused = open && index === i
         return (
@@ -95,7 +74,6 @@ export function TvSideMenu({
         )
       })}
       </div>
-      </nav>
-    </>
+    </nav>
   )
 }
