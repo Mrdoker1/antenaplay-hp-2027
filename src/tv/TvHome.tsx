@@ -9,6 +9,9 @@ import { tidyTitle } from '../v2027/title'
 import { canaleGratuite, canaleTv } from '../data/channels'
 import { TvChannelTile } from './TvChannelTile'
 import { TvRail } from './TvRail'
+import { franchiseFor, titleCount, type Franchise } from '../lib/franchise'
+import { TvFranchiseScreen } from './TvFranchiseScreen'
+import { TvLiveScreen } from './TvLiveScreen'
 import { TvSectionScreen, type Filter } from './TvSectionScreen'
 import { TvSearch } from './TvSearch'
 import { MENU } from './menu'
@@ -84,6 +87,7 @@ const HERO_ACTIONS = 2
  *  sessions actually want. */
 export default function TvHome() {
   const [searchOpen, setSearchOpen] = useState(false)
+  const [franchise, setFranchise] = useState<Franchise | null>(null)
   const [menuIndex, setMenuIndex] = useState<number | null>(null)
   const [section, setSection] = useState('home')
   const menuOpen = menuIndex !== null
@@ -94,11 +98,22 @@ export default function TvHome() {
   )
 
   const onEnter = useCallback(({ row, col }: { row: number; col: number }) => {
-    if (row === 0 && col === 1) setSearchOpen(true)
+    if (row === 0) {
+      if (col === 1) setSearchOpen(true)
+      return
+    }
+    // pressing OK on a title that belongs to a franchise opens its universe
+    const picked = RAILS[row - 1]?.items?.[col]
+    if (picked) {
+      const found = franchiseFor(picked.title)
+      if (found) setFranchise(found)
+    }
   }, [])
 
   const sectionScreen = SECTIONS[section]
-  const homeActive = !menuOpen && !searchOpen && !sectionScreen
+  const liveScreen = section === 'live'
+  const overlay = menuOpen || searchOpen || Boolean(franchise)
+  const homeActive = !overlay && !sectionScreen && !liveScreen
 
   const { focus } = useTvNav(lengths, onEnter, homeActive, (dir) => {
     if (dir === 'left') setMenuIndex(MENU.findIndex((m) => m.key === section))
@@ -109,7 +124,13 @@ export default function TvHome() {
   useEffect(() => {
     if (searchOpen) return
     const onKey = (e: KeyboardEvent) => {
-      if (!menuOpen) return
+      if (!menuOpen) {
+        if (franchise && (e.key === 'Escape' || e.key === 'Backspace')) {
+          e.preventDefault()
+          setFranchise(null)
+        }
+        return
+      }
       e.preventDefault()
       switch (e.key) {
         case 'ArrowUp':
@@ -126,6 +147,7 @@ export default function TvHome() {
         case 'Enter': {
           const picked = MENU[menuIndex]
           setMenuIndex(null)
+          setFranchise(null)
           if (picked.key === 'search') setSearchOpen(true)
           else setSection(picked.key)
           break
@@ -135,13 +157,16 @@ export default function TvHome() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [menuOpen, menuIndex, searchOpen])
+  }, [menuOpen, menuIndex, searchOpen, franchise])
 
   const rail = focus.row > 0 ? RAILS[focus.row - 1] : null
   const item = rail?.items?.[focus.col] ?? catalogue.continueWatching[0]
   const artKey = item.cover === PLACEHOLDER ? null : item.cover
   const art = asset(artKey)
   const { a1 } = accentFromTitle(item.title || 'antena')
+  /* A card that leads somewhere deeper has to say so — on a remote there is no
+     hover to discover it with. */
+  const universe = focus.row > 0 ? franchiseFor(item.title) : null
 
   useEffect(() => {
     document.documentElement.dataset.skin = 'tv'
@@ -161,7 +186,7 @@ export default function TvHome() {
       />
       <TvSideMenu open={menuOpen} index={menuIndex ?? 0} active={section} />
 
-      {!sectionScreen && (
+      {!sectionScreen && !liveScreen && (
         <>
         {/* The backdrop is card artwork — 537px wide at best — so stretching it
             across 1280 is what made it look soft. It now occupies the right 62%,
@@ -228,8 +253,16 @@ export default function TvHome() {
             <p className="mt-[12px] font-meta text-[20px]/[26px] uppercase tracking-[0.1em] text-tv-dim">
               {item.meta}
             </p>
+            {universe && (
+              <p className="mt-[12px] flex w-fit items-center gap-[10px] rounded-full bg-white/10 py-[6px] pe-[16px] ps-[8px] font-meta text-[17px]/[22px] uppercase tracking-[0.1em] text-tv-fg/85">
+                <span className="rounded-full bg-tv-fg px-[10px] py-[2px] text-[15px]/[20px] font-bold text-tv-ground">
+                  OK
+                </span>
+                Universul {universe.name}  ·  {titleCount(universe.total)}
+              </p>
+            )}
 
-            <div className="mt-[18px] flex items-center gap-[22px]">
+            <div className={`flex items-center gap-[22px] ${universe ? 'mt-[14px]' : 'mt-[18px]'}`}>
               <span
                 className={`flex items-center gap-[10px] rounded-full bg-tv-action px-[22px] py-[10px] text-[21px]/[26px] font-bold transition-transform duration-200 ${
                   focus.row === 0 && focus.col === 0 ? 'tv-focus scale-[1.04]' : ''
@@ -302,8 +335,23 @@ export default function TvHome() {
         <TvSectionScreen
           title={sectionScreen.title}
           filters={sectionScreen.filters}
-          active={!menuOpen && !searchOpen}
+          active={!overlay}
           onOpenMenu={() => setMenuIndex(MENU.findIndex((m) => m.key === section))}
+        />
+      )}
+
+      {liveScreen && (
+        <TvLiveScreen
+          active={!overlay}
+          onOpenMenu={() => setMenuIndex(MENU.findIndex((m) => m.key === section))}
+        />
+      )}
+
+      {franchise && (
+        <TvFranchiseScreen
+          franchise={franchise}
+          active={!menuOpen && !searchOpen}
+          onClose={() => setFranchise(null)}
         />
       )}
 
