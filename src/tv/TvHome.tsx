@@ -2,17 +2,56 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import mark from '../assets/antena-mark.svg'
 import { asset } from '../lib/assets'
 import { accentFromTitle } from '../v2027/accent'
+import type { Channel } from '../data/types'
 import { rows as catalogue, type Item } from '../v2027/catalog'
 import { PlayGlyph } from '../v2027/PlayGlyph'
 import { tidyTitle } from '../v2027/title'
+import { canaleGratuite, canaleTv } from '../data/channels'
+import { TvChannelTile } from './TvChannelTile'
 import { TvRail } from './TvRail'
+import { TvSectionScreen, type Filter } from './TvSectionScreen'
 import { TvSearch } from './TvSearch'
 import { MENU } from './menu'
 import { TvSideMenu } from './TvSideMenu'
 import { TvStage } from './TvStage'
 import { useTvNav } from './useTvNav'
 
-const RAILS: { title: string; items: Item[]; ranked?: boolean }[] = [
+/** The section pages, on the same set AntenaPLAY's own TV app offers. Each
+ *  filter narrows by something the catalogue actually knows — a label that
+ *  filtered nothing would be worse than no filter. */
+const SECTIONS: Record<string, { title: string; filters: Filter[] }> = {
+  emisiuni: {
+    title: 'Emisiuni',
+    filters: [
+      { label: 'Toate', items: [...catalogue.topShowuri, ...catalogue.trending] },
+      { label: 'Reality', items: catalogue.topShowuri },
+      { label: 'Insula Iubirii', items: catalogue.insulaRomania },
+      { label: 'Asia & America', items: catalogue.asiaAmerica },
+      { label: 'Power Couple', items: catalogue.powerCouple },
+    ],
+  },
+  seriale: {
+    title: 'Seriale',
+    filters: [
+      { label: 'Toate', items: [...catalogue.topSeriale, ...catalogue.filmeSerialeNoi] },
+      { label: 'Top', items: catalogue.topSeriale },
+      { label: 'Noi', items: catalogue.filmeSerialeNoi },
+    ],
+  },
+  sport: {
+    title: 'Sport',
+    filters: [{ label: 'Toate', items: catalogue.sport }],
+  },
+  list: {
+    title: 'Lista mea',
+    filters: [{ label: 'Toate', items: catalogue.continueWatching }],
+  },
+}
+
+type Rail = { title: string; items?: Item[]; channels?: Channel[]; ranked?: boolean }
+
+const RAILS: Rail[] = [
+  { title: 'Canale TV', channels: [...canaleTv.slice(0, 24), ...canaleGratuite] },
   { title: 'Continuă de unde ai rămas', items: catalogue.continueWatching },
   { title: 'Trending în AntenaPLAY', items: catalogue.trending },
   { title: 'Top 10 în România', items: catalogue.top10.slice(0, 10), ranked: true },
@@ -49,26 +88,28 @@ export default function TvHome() {
   const [section, setSection] = useState('home')
   const menuOpen = menuIndex !== null
 
-  const lengths = useMemo(() => [HERO_ACTIONS, ...RAILS.map((r) => r.items.length)], [])
+  const lengths = useMemo(
+    () => [HERO_ACTIONS, ...RAILS.map((r) => (r.items ?? r.channels ?? []).length)],
+    [],
+  )
 
   const onEnter = useCallback(({ row, col }: { row: number; col: number }) => {
     if (row === 0 && col === 1) setSearchOpen(true)
   }, [])
 
-  const { focus } = useTvNav(lengths, onEnter, !menuOpen && !searchOpen)
+  const sectionScreen = SECTIONS[section]
+  const homeActive = !menuOpen && !searchOpen && !sectionScreen
+
+  const { focus } = useTvNav(lengths, onEnter, homeActive, (dir) => {
+    if (dir === 'left') setMenuIndex(MENU.findIndex((m) => m.key === section))
+  })
 
   /* The menu owns the remote while it is open, and Left from the first column
      is how you hand it over. */
   useEffect(() => {
     if (searchOpen) return
     const onKey = (e: KeyboardEvent) => {
-      if (!menuOpen) {
-        if (e.key === 'ArrowLeft' && focus.col === 0) {
-          e.preventDefault()
-          setMenuIndex(MENU.findIndex((m) => m.key === section))
-        }
-        return
-      }
+      if (!menuOpen) return
       e.preventDefault()
       switch (e.key) {
         case 'ArrowUp':
@@ -94,10 +135,10 @@ export default function TvHome() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [menuOpen, menuIndex, focus.col, searchOpen, section])
+  }, [menuOpen, menuIndex, searchOpen])
 
   const rail = focus.row > 0 ? RAILS[focus.row - 1] : null
-  const item = rail?.items[focus.col] ?? RAILS[0].items[0]
+  const item = rail?.items?.[focus.col] ?? catalogue.continueWatching[0]
   const artKey = item.cover === PLACEHOLDER ? null : item.cover
   const art = asset(artKey)
   const { a1 } = accentFromTitle(item.title || 'antena')
@@ -111,37 +152,8 @@ export default function TvHome() {
 
   return (
     <TvStage>
-      {/* The backdrop is card artwork — 537px wide at best — so stretching it
-          across 1280 is what made it look soft. It now occupies the right 62%,
-          which is roughly its native size, and dissolves into the page with a
-          mask rather than ending on a visible edge. */}
-      <div className="absolute inset-y-0 right-0 w-[62%] overflow-hidden">
-        {art ? (
-          <img
-            key={artKey}
-            src={art}
-            alt=""
-            className="size-full object-cover object-top"
-            style={{
-              maskImage:
-                'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.5) 22%, #000 52%), linear-gradient(to bottom, #000 46%, transparent 92%)',
-              maskComposite: 'intersect',
-              WebkitMaskImage:
-                'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.5) 22%, #000 52%), linear-gradient(to bottom, #000 46%, transparent 92%)',
-              WebkitMaskComposite: 'source-in',
-            }}
-          />
-        ) : (
-          <div
-            className="size-full"
-            style={{ backgroundImage: `radial-gradient(90% 110% at 80% 0%, hsl(${a1} / 0.5), transparent 70%)` }}
-          />
-        )}
-      </div>
-      <div className="absolute inset-0 bg-[linear-gradient(97deg,var(--color-tv-ground)_2%,rgba(7,7,10,0.88)_28%,rgba(7,7,10,0.35)_54%,transparent_86%)]" />
-      <div className="absolute inset-x-0 bottom-0 h-[58%] bg-gradient-to-b from-transparent via-tv-ground/80 to-tv-ground" />
-
-      {/* the menu dims the rest rather than replacing it, so you keep your place */}
+      {/* the menu dims the rest rather than replacing it, so you keep your
+          place — and it is present on every screen, not just the home one */}
       <div
         className={`absolute inset-0 z-30 bg-black/55 transition-opacity duration-300 ${
           menuOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
@@ -149,87 +161,151 @@ export default function TvHome() {
       />
       <TvSideMenu open={menuOpen} index={menuIndex ?? 0} active={section} />
 
-      {/* the logo is not a destination, so it is not focusable */}
-      <div
-        className="absolute inset-x-0 top-0 flex items-center"
-        style={{
-          paddingLeft: 'calc(var(--tv-rail) + var(--tv-safe))',
-          paddingRight: 'var(--tv-safe)',
-          paddingTop: 26,
-        }}
-      >
-        <span className="flex items-baseline gap-[8px]">
-          <img src={mark} alt="" className="h-[24px] w-auto" />
-          <span className="text-[24px]/[28px] font-black tracking-[-0.03em]">
-            antena<span className="font-light text-tv-fg/65">PLAY</span>
-          </span>
-        </span>
-      </div>
-
-      <div
-        className="absolute left-0 right-0"
-        style={{
-          paddingLeft: 'calc(var(--tv-rail) + var(--tv-safe))',
-          paddingRight: 'var(--tv-safe)',
-          top: 96,
-        }}
-      >
-        <div className="max-w-[620px]">
-          <p className="font-meta text-[19px]/[26px] uppercase tracking-[0.16em] text-tv-dim">
-            {rail ? rail.title : 'AntenaPLAY'}
-          </p>
-          <h1 className="mt-[10px] line-clamp-2 text-[50px]/[54px] font-black tracking-[-0.03em]">
-            {tidyTitle(item.title)}
-          </h1>
-          <p className="mt-[12px] font-meta text-[20px]/[26px] uppercase tracking-[0.1em] text-tv-dim">
-            {item.meta}
-          </p>
-
-          <div className="mt-[18px] flex items-center gap-[22px]">
-            <span
-              className={`flex items-center gap-[10px] rounded-full bg-tv-action px-[22px] py-[10px] text-[21px]/[26px] font-bold transition-transform duration-200 ${
-                focus.row === 0 && focus.col === 0 ? 'tv-focus scale-[1.04]' : ''
-              }`}
-            >
-              <PlayGlyph className="size-[20px]" />
-              Redă
-            </span>
-            <span
-              className={`flex items-center gap-[10px] rounded-full bg-white/12 px-[22px] py-[10px] text-[21px]/[26px] font-semibold transition-transform duration-200 ${
-                focus.row === 0 && focus.col === 1 ? 'tv-focus-ai scale-[1.04]' : ''
-              }`}
-            >
-              <Sparkle className="size-[22px] text-tv-fg" />
-              Caută cu vocea
-            </span>
-          </div>
+      {!sectionScreen && (
+        <>
+        {/* The backdrop is card artwork — 537px wide at best — so stretching it
+            across 1280 is what made it look soft. It now occupies the right 62%,
+            which is roughly its native size, and dissolves into the page with a
+            mask rather than ending on a visible edge. */}
+        <div className="absolute inset-y-0 right-0 w-[62%] overflow-hidden">
+          {art ? (
+            <img
+              key={artKey}
+              src={art}
+              alt=""
+              className="size-full object-cover object-top"
+              style={{
+                maskImage:
+                  'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.5) 22%, #000 52%), linear-gradient(to bottom, #000 46%, transparent 92%)',
+                maskComposite: 'intersect',
+                WebkitMaskImage:
+                  'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.5) 22%, #000 52%), linear-gradient(to bottom, #000 46%, transparent 92%)',
+                WebkitMaskComposite: 'source-in',
+              }}
+            />
+          ) : (
+            <div
+              className="size-full"
+              style={{ backgroundImage: `radial-gradient(90% 110% at 80% 0%, hsl(${a1} / 0.5), transparent 70%)` }}
+            />
+          )}
         </div>
-      </div>
+        <div className="absolute inset-0 bg-[linear-gradient(97deg,var(--color-tv-ground)_2%,rgba(7,7,10,0.88)_28%,rgba(7,7,10,0.35)_54%,transparent_86%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-[58%] bg-gradient-to-b from-transparent via-tv-ground/80 to-tv-ground" />
 
-      {/* one row in full, the next peeking — a remote moves a row at a time.
-          The padding is what keeps a focused card's ring and lift from being
-          clipped: overflow cuts at the padding box, so the room has to be
-          padding rather than margin. */}
-      <div className="absolute inset-x-0 bottom-0" style={{ height: 360 }}>
+        {/* the logo is not a destination, so it is not focusable */}
         <div
-          className="tv-no-scrollbar h-full overflow-y-auto py-[30px]"
+          className="absolute inset-x-0 top-0 flex items-center"
           style={{
-            paddingLeft: 'calc(var(--tv-rail) + var(--tv-safe) - 26px)',
-            paddingRight: 'calc(var(--tv-safe) - 26px)',
+            paddingLeft: 'calc(var(--tv-rail) + var(--tv-safe))',
+            paddingRight: 'var(--tv-safe)',
+            paddingTop: 26,
           }}
         >
-          {RAILS.map((r, rowIndex) => (
-            <TvRail
-              key={r.title}
-              title={r.title}
-              items={r.items}
-              rowIndex={rowIndex + 1}
-              focus={focus}
-              ranked={r.ranked}
-            />
-          ))}
+          <span className="flex items-baseline gap-[8px]">
+            <img src={mark} alt="" className="h-[24px] w-auto" />
+            <span className="text-[24px]/[28px] font-black tracking-[-0.03em]">
+              antena<span className="font-light text-tv-fg/65">PLAY</span>
+            </span>
+          </span>
         </div>
-      </div>
+
+        <div
+          className="absolute left-0 right-0"
+          style={{
+            paddingLeft: 'calc(var(--tv-rail) + var(--tv-safe))',
+            paddingRight: 'var(--tv-safe)',
+            top: 96,
+          }}
+        >
+          <div className="max-w-[620px]">
+            <p className="font-meta text-[19px]/[26px] uppercase tracking-[0.16em] text-tv-dim">
+              {rail ? rail.title : 'AntenaPLAY'}
+            </p>
+            <h1 className="mt-[10px] line-clamp-2 text-[50px]/[54px] font-black tracking-[-0.03em]">
+              {tidyTitle(item.title)}
+            </h1>
+            <p className="mt-[12px] font-meta text-[20px]/[26px] uppercase tracking-[0.1em] text-tv-dim">
+              {item.meta}
+            </p>
+
+            <div className="mt-[18px] flex items-center gap-[22px]">
+              <span
+                className={`flex items-center gap-[10px] rounded-full bg-tv-action px-[22px] py-[10px] text-[21px]/[26px] font-bold transition-transform duration-200 ${
+                  focus.row === 0 && focus.col === 0 ? 'tv-focus scale-[1.04]' : ''
+                }`}
+              >
+                <PlayGlyph className="size-[20px]" />
+                Redă
+              </span>
+              <span
+                className={`flex items-center gap-[10px] rounded-full bg-white/12 px-[22px] py-[10px] text-[21px]/[26px] font-semibold transition-transform duration-200 ${
+                  focus.row === 0 && focus.col === 1 ? 'tv-focus-ai scale-[1.04]' : ''
+                }`}
+              >
+                <Sparkle className="size-[22px] text-tv-fg" />
+                Caută cu vocea
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* one row in full, the next peeking — a remote moves a row at a time.
+            The padding is what keeps a focused card's ring and lift from being
+            clipped: overflow cuts at the padding box, so the room has to be
+            padding rather than margin. */}
+        <div className="absolute inset-x-0 bottom-0" style={{ height: 360 }}>
+          <div
+            className="tv-no-scrollbar h-full overflow-y-auto py-[30px]"
+            style={{
+              paddingLeft: 'calc(var(--tv-rail) + var(--tv-safe) - 26px)',
+              paddingRight: 'calc(var(--tv-safe) - 26px)',
+            }}
+          >
+            {RAILS.map((r, rowIndex) =>
+              r.channels ? (
+                <section key={r.title} className="pb-[16px]">
+                  <h2
+                    className={`px-[26px] text-[24px]/[30px] font-bold tracking-[-0.01em] transition-colors ${
+                      focus.row === rowIndex + 1 ? 'text-tv-fg' : 'text-tv-faint'
+                    }`}
+                  >
+                    {r.title}
+                  </h2>
+                  <div className="tv-no-scrollbar -my-[16px] mt-[-6px] flex gap-[16px] overflow-x-auto px-[26px] py-[30px]">
+                    {r.channels.map((c, colIndex) => (
+                      <TvChannelTile
+                        key={`${c.name}-${colIndex}`}
+                        channel={c}
+                        focused={focus.row === rowIndex + 1 && focus.col === colIndex}
+                      />
+                    ))}
+                  </div>
+                </section>
+              ) : (
+                <TvRail
+                  key={r.title}
+                  title={r.title}
+                  items={r.items ?? []}
+                  rowIndex={rowIndex + 1}
+                  focus={focus}
+                  ranked={r.ranked}
+                />
+              ),
+            )}
+          </div>
+        </div>
+        </>
+      )}
+
+      {sectionScreen && (
+        <TvSectionScreen
+          title={sectionScreen.title}
+          filters={sectionScreen.filters}
+          active={!menuOpen && !searchOpen}
+          onOpenMenu={() => setMenuIndex(MENU.findIndex((m) => m.key === section))}
+        />
+      )}
 
       {searchOpen && <TvSearch onClose={() => setSearchOpen(false)} />}
     </TvStage>

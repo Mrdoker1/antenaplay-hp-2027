@@ -168,6 +168,18 @@ So every size in `src/tv` is a real design pixel, the 5% safe area is real, and
 "nothing smaller than 18px, nothing that matters under 20px" is a claim that can
 be measured rather than hoped for.
 
+It is more than one screen. The menu carries the sections AntenaPLAY's own TV
+app carries — Acasă, Caută, Live, Emisiuni, Seriale, Sport, Lista mea — and
+Emisiuni, Seriale, Sport and Lista mea open real section pages in the shape that
+app uses: the section name, a row of filters, then a grid of wide cards with
+titles under them. The filters narrow by something the catalogue actually knows;
+a chip that filtered nothing would be worse than no chip. Home opens on a
+`Canale TV` rail of channel logos, as theirs does.
+
+Wide cards with captions on a section page and caption-less posters on the home
+rails is deliberate: a grid you scan needs its labels, while a home rail has a
+hero above it already naming whatever is focused.
+
 `useTvNav` owns the remote, and only one surface holds it at a time — the home
 screen stops listening while the search overlay is open, or a single press lands
 in two places.

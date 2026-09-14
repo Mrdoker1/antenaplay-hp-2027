@@ -16,10 +16,12 @@ export type TvFocus = { row: number; col: number }
 export function useTvNav(
   rowLengths: number[],
   onEnter?: (f: TvFocus) => void,
-  /** Off while another surface owns the remote. Without this the screen
-   *  underneath keeps moving its own focus behind an open overlay, and a single
-   *  press lands in two places. */
+  /** Off while another surface owns the remote. */
   enabled = true,
+  /** Called when a press cannot move any further in that direction. The screen
+   *  decides what a wall means — pressing Left at the first column is how you
+   *  reach the menu. */
+  onEdge?: (direction: 'left' | 'right' | 'up' | 'down') => void,
 ) {
   const [focus, setFocus] = useState<TvFocus>({ row: 0, col: 0 })
   /** the column each row was last left on */
@@ -31,17 +33,24 @@ export function useTvNav(
       const rows = rowLengths
       if (dRow) {
         const row = Math.max(0, Math.min(rows.length - 1, prev.row + dRow))
-        if (row === prev.row) return prev
+        if (row === prev.row) {
+          onEdge?.(dRow < 0 ? 'up' : 'down')
+          return prev
+        }
         memory.current[prev.row] = prev.col
         const remembered = memory.current[row] ?? 0
         return { row, col: Math.max(0, Math.min((rows[row] ?? 1) - 1, remembered)) }
       }
       const max = (rows[prev.row] ?? 1) - 1
       const col = Math.max(0, Math.min(max, prev.col + dCol))
-      return col === prev.col ? prev : { ...prev, col }
+      if (col === prev.col) {
+        onEdge?.(dCol < 0 ? 'left' : 'right')
+        return prev
+      }
+      return { ...prev, col }
     })
     },
-    [rowLengths],
+    [rowLengths, onEdge],
   )
 
   useEffect(() => {
