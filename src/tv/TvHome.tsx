@@ -5,19 +5,20 @@ import { accentFromTitle } from '../v2027/accent'
 import { rows as catalogue, type Item } from '../v2027/catalog'
 import { PlayGlyph } from '../v2027/PlayGlyph'
 import { tidyTitle } from '../v2027/title'
-import { TvCard } from './TvCard'
+import { TvRail } from './TvRail'
 import { TvSearch } from './TvSearch'
 import { MENU } from './menu'
 import { TvSideMenu } from './TvSideMenu'
 import { TvStage } from './TvStage'
 import { useTvNav } from './useTvNav'
 
-const RAILS: { title: string; items: Item[] }[] = [
+const RAILS: { title: string; items: Item[]; ranked?: boolean }[] = [
   { title: 'Continuă de unde ai rămas', items: catalogue.continueWatching },
   { title: 'Trending în AntenaPLAY', items: catalogue.trending },
-  { title: 'Top 10 în România', items: catalogue.top10.slice(0, 10) },
+  { title: 'Top 10 în România', items: catalogue.top10.slice(0, 10), ranked: true },
   { title: 'AntenaPLAY Sport', items: catalogue.sport },
   { title: 'În curând', items: catalogue.inCurand },
+  { title: 'Top filme', items: catalogue.topFilme.slice(0, 10), ranked: true },
   { title: 'Filme și seriale noi', items: catalogue.filmeSerialeNoi },
 ]
 
@@ -199,25 +200,14 @@ export default function TvHome() {
           }}
         >
           {RAILS.map((r, rowIndex) => (
-            <section key={r.title} className="pb-[16px]">
-              <h2
-                className={`px-[18px] text-[24px]/[30px] font-bold tracking-[-0.01em] transition-colors ${
-                  focus.row === rowIndex + 1 ? 'text-tv-fg' : 'text-tv-faint'
-                }`}
-              >
-                {r.title}
-              </h2>
-              <div className="tv-no-scrollbar -my-[16px] mt-[-6px] flex gap-[16px] overflow-x-auto px-[26px] py-[30px]">
-                {r.items.map((it, colIndex) => (
-                  <TvCard
-                    key={`${it.title}-${colIndex}`}
-                    item={it}
-                    width={168}
-                    focused={focus.row === rowIndex + 1 && focus.col === colIndex}
-                  />
-                ))}
-              </div>
-            </section>
+            <TvRail
+              key={r.title}
+              title={r.title}
+              items={r.items}
+              rowIndex={rowIndex + 1}
+              focus={focus}
+              ranked={r.ranked}
+            />
           ))}
         </div>
       </div>

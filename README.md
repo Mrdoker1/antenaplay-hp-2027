@@ -148,6 +148,11 @@ that a TV has no pointer — there is a focus and four directions:
 - **Only what you can act on takes focus.** The logo is not a destination, so it
   is not in the model; the hero's Play button is, because it is what most
   sessions want.
+- **The ranked rails carry their numerals**, the same treatment the web skins
+  use — the position as a display-scale glyph filled with that card's own
+  colour, with the poster overlapping it. It reads better here than on a
+  desktop: a number that size is legible from the sofa in a way a caption is
+  not, which is also why the cards carry no caption of their own.
 - **No key hints on screen.** Arrows on a remote are self-evident; the line they
   occupied now says how much the search found.
 - **Search has its own screen and no keyboard.** Nobody types a sentence with a

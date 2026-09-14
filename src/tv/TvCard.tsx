@@ -15,10 +15,13 @@ export function TvCard({
   item,
   focused,
   width = 148,
+  lockup = false,
 }: {
   item: Item
   focused: boolean
   width?: number
+  /** show the title lockup on the artwork, as the Top 10 rail does */
+  lockup?: boolean
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const key = item.cover === PLACEHOLDER ? null : item.cover
@@ -29,10 +32,12 @@ export function TvCard({
     if (focused) ref.current?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' })
   }, [focused])
 
+  const lockupArt = lockup ? asset(item.logo) : null
+
   return (
-    <div ref={ref} className="shrink-0" style={{ width }}>
+    <div ref={ref} className="tv-scroll-gap shrink-0" style={{ width }}>
       <div
-        className={`relative aspect-2/3 overflow-hidden rounded-[10px] bg-tv-raised transition-transform duration-200 ${
+        className={`relative aspect-2/3 overflow-hidden rounded-[14px] bg-tv-raised transition-transform duration-200 ${
           focused ? 'tv-focus scale-[1.08]' : ''
         }`}
       >
@@ -54,6 +59,16 @@ export function TvCard({
             }}
           />
         )}
+        {lockupArt && (
+          <img
+            src={lockupArt}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            className="pointer-events-none absolute inset-x-[15%] bottom-[7.5%] max-h-[34%] w-[70%] object-contain object-bottom"
+          />
+        )}
+
         {item.progress !== undefined && (
           <div className="absolute inset-x-0 bottom-0 h-[5px] bg-white/25">
             <div className="h-full bg-tv-action" style={{ width: `${Math.round(item.progress * 100)}%` }} />

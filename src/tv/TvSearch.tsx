@@ -196,7 +196,7 @@ function Pill({
   return (
     <span
       ref={ref}
-      className={`shrink-0 whitespace-nowrap rounded-full px-[22px] py-[11px] text-[22px]/[28px] font-semibold transition-transform duration-200 ${
+      className={`tv-scroll-gap shrink-0 whitespace-nowrap rounded-full px-[22px] py-[11px] text-[22px]/[28px] font-semibold transition-transform duration-200 ${
         tone === 'ai' ? 'bg-tv-ai/20 text-tv-fg' : 'bg-white/10 text-tv-fg'
       } ${focused ? (tone === 'ai' ? 'tv-focus-ai scale-[1.05]' : 'tv-focus scale-[1.05]') : ''}`}
     >
@@ -214,7 +214,7 @@ function Result({ hit, focused }: { hit: Hit; focused: boolean }) {
   }, [focused])
 
   return (
-    <div ref={ref} className="w-[268px] shrink-0">
+    <div ref={ref} className="tv-scroll-gap w-[268px] shrink-0">
       <div
         className={`relative aspect-video overflow-hidden rounded-[10px] bg-tv-raised transition-transform duration-200 ${
           focused ? 'tv-focus scale-[1.05]' : ''

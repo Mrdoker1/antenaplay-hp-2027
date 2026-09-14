@@ -52,6 +52,14 @@
   box-shadow: 0 0 44px rgba(160, 107, 255, 0.5);
 }
 
+/* scrollIntoView aligns an element's border box to the scrollport edge, which
+   is the padding box — so the padding that stops a focused ring being clipped on
+   first paint stops helping the moment anything scrolls. scroll-margin makes the
+   browser treat the element as larger and leave the gap. */
+@utility tv-scroll-gap {
+  scroll-margin: 30px;
+}
+
 @utility tv-no-scrollbar {
   scrollbar-width: none;
   -ms-overflow-style: none;
