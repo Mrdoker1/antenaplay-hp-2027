@@ -28,6 +28,7 @@
 
 import { asset } from '../lib/assets'
 import { canaleGratuite, canaleTv } from '../data/channels'
+import { filmTitles } from '../data/film-titles'
 import { films } from '../data/films'
 import { liveEvents } from '../data/liveEvents'
 import {
@@ -409,12 +410,17 @@ function buildIndex(): Entry[] {
     // latin title. Those are dropped rather than shown untranslated, since
     // every other word on this surface is English.
     if (!film.en || CYRILLIC.test(film.en)) continue
+    /* The Romanian release title where the distributor gave the film one —
+       "Odiseea", not "The Odyssey". Both spellings stay searchable, because a
+       Romanian audience types English film titles constantly; that is the same
+       reason the vocabulary above carries both languages. */
+    const ro = filmTitles[film.id]
     const tags = [...new Set(['film', ...film.genres.flatMap((g) => GENRE_TAGS[g] ?? [])])]
     const label = film.genres.map((g) => GENRE_LABEL[g]).filter(Boolean).slice(0, 2).join(' · ')
     out.push({
       key: `film:${film.id}`,
-      title: film.en && film.en !== film.ru ? film.en : film.ru,
-      folded: fold(`${film.en} ${film.ru}`),
+      title: ro ?? (film.en && film.en !== film.ru ? film.en : film.ru),
+      folded: fold(`${film.en} ${film.ru} ${ro ?? ''}`),
       art: film.id,
       tags,
       moods: moodsFor(film.genres, film.id),

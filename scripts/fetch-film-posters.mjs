@@ -17,8 +17,8 @@
  *
  *    TMDB_ACCESS_TOKEN=… node scripts/fetch-film-posters.mjs
  *
- *  Writes src/assets/films/<kinopoisk id>.jpg and prints a JSON map of
- *  Romanian titles for src/data/films.ts. */
+ *  Writes src/assets/films/<kinopoisk id>.jpg and rewrites
+ *  src/data/film-titles.ts. */
 
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
@@ -30,7 +30,7 @@ if (!TOKEN) {
 }
 
 const OUT = new URL('../src/assets/films/', import.meta.url)
-const TITLES = new URL('../src/data/film-titles.json', import.meta.url)
+const TITLES = new URL('../src/data/film-titles.ts', import.meta.url)
 /** 500px wide is 2× the largest a card is ever drawn, and ~60 KB a file. */
 const SIZE = 'w500'
 const CONCURRENCY = 8
@@ -91,8 +91,15 @@ const wanted = films.filter((f) => f.en && !CYRILLIC.test(f.en))
 
 await mkdir(OUT, { recursive: true })
 
-const titles = existsSync(TITLES) ? JSON.parse(await readFile(TITLES, 'utf8')) : {}
-const force = process.argv.includes('--force')
+/* Kept titles are re-read from the module so a partial run adds to what is
+   there rather than throwing it away. */
+const titles = {}
+if (existsSync(TITLES)) {
+  const prev = await readFile(TITLES, 'utf8')
+  for (const [, id, title] of prev.matchAll(/^\s+(kp\d+): "((?:[^"\\]|\\.)*)",$/gm)) {
+    titles[id] = JSON.parse(`"${title}"`)
+  }
+}
 let done = 0
 let ok = 0
 let missed = 0
@@ -142,7 +149,7 @@ async function one(film) {
   }
 }
 
-const queue = wanted.filter((f) => force || !existsSync(new URL(`${f.id}.jpg`, OUT)) || true)
+const queue = wanted
 console.log(`${queue.length} films, ${CONCURRENCY} at a time`)
 
 let cursor = 0
@@ -152,6 +159,22 @@ await Promise.all(
   }),
 )
 
-await writeFile(TITLES, `${JSON.stringify(titles, null, 1)}\n`)
+const body = Object.keys(titles)
+  .sort()
+  .map((id) => `  ${id}: ${JSON.stringify(titles[id])},`)
+  .join('\n')
+await writeFile(
+  TITLES,
+  `/** Romanian release titles for the film pool, keyed by Kinopoisk id.
+ *
+ *  Fetched alongside the posters — see scripts/fetch-film-posters.mjs. Only
+ *  genuinely localised titles are here: TMDB echoes the original back when a
+ *  film was never retitled, and storing that would just duplicate the
+ *  catalogue. ${Object.keys(titles).length} of the ${wanted.length} films have one. */
+export const filmTitles: Record<string, string> = {
+${body}
+}
+`,
+)
 console.log(`\nposters: ${ok}   no match: ${missed}   romanian titles: ${Object.keys(titles).length}`)
 if (gaps.length) console.log('\nno poster for:\n' + gaps.slice(0, 40).join('\n'))

@@ -69,7 +69,11 @@ export function TasteTuner({ s, onClose }: { s: SmartSearch; onClose: () => void
 
   return (
     <section className="v3-inset mt-[clamp(28px,3vw,52px)]">
-      <div className="relative overflow-hidden rounded-[20px] border border-v3-line bg-v3-panel">
+      {/* Isolated: the layers inside this block — the close button, the ramp
+          over the pile — are stacked against each other, and without a
+          stacking context of their own they compete with the page's overlays
+          and end up drawn over the open search. */}
+      <div className="relative isolate overflow-hidden rounded-[20px] border border-v3-line bg-v3-panel">
         {/* The assistant's own light, so the block reads as its surface rather
             than as one more shelf that happens to sit above the shelves. */}
         <div
@@ -120,10 +124,14 @@ export function TasteTuner({ s, onClose }: { s: SmartSearch; onClose: () => void
                 }}
               />
             ))}
+            {/* Only as wide as the pile: run to the full column and the last
+                stretch is a ramp over bare panel, which reads as a black slab
+                parked next to the cards once the deck is down to a few. */}
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-0 z-40"
+              className="pointer-events-none absolute inset-y-0 left-0 z-40"
               style={{
+                width: CARD_W + Math.max(0, pile.filter((p) => !p.gone).length - 1) * STEP,
                 backgroundImage: `linear-gradient(to right, transparent ${CARD_W - 8}px, rgba(8,8,11,0.62) ${CARD_W + 96}px, rgba(8,8,11,0.9) 100%)`,
               }}
             />
