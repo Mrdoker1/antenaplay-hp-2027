@@ -185,7 +185,7 @@ export default function TvHome() {
             {item.meta}
           </p>
 
-          <div className="mt-[18px] flex items-center gap-[12px]">
+          <div className="mt-[18px] flex items-center gap-[28px]">
             <span
               className={`flex items-center gap-[10px] rounded-full bg-tv-action px-[22px] py-[10px] text-[21px]/[26px] font-bold transition-transform duration-200 ${
                 focus.row === 0 && focus.col === 0 ? 'tv-focus scale-[1.04]' : ''

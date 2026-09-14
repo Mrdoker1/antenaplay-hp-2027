@@ -139,7 +139,7 @@ export function TvSearch({ onClose }: { onClose: () => void }) {
 
         {/* padding, not margin: overflow clips at the padding box, so this is
             what keeps a focused pill's ring from being cut */}
-        <div className="tv-no-scrollbar -mx-[16px] -my-[14px] mt-[12px] flex items-center gap-[14px] overflow-x-auto px-[16px] py-[14px]">
+        <div className="tv-no-scrollbar -mx-[16px] -my-[14px] mt-[12px] flex items-center gap-[24px] overflow-x-auto px-[16px] py-[14px]">
           <Pill focused={focus.row === 0 && focus.col === 0} tone="ai">
             <span className="flex items-center gap-[12px]">
               <Microphone className="size-[26px]" />
