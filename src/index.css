@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @import './v2027/tokens.css';
 @import './v3ai/tokens.css';
+@import './tv/tokens.css';
 
 /* ── Design tokens, lifted from the Figma file (node 1:2) ──────────────── */
 @theme {

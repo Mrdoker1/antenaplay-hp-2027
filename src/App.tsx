@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react'
 import BaselineHome from './BaselineHome'
 import Home2027 from './v2027/Home2027'
+import TvHome from './tv/TvHome'
 import Home3 from './v3ai/Home3'
 
-type Skin = 'baseline' | 'v2027' | 'ai'
+type Skin = 'baseline' | 'v2027' | 'ai' | 'tv'
 
 const KEY = 'antena.skin'
-const SKINS: Skin[] = ['baseline', 'v2027', 'ai']
+const SKINS: Skin[] = ['baseline', 'v2027', 'ai', 'tv']
 
 function initialSkin(): Skin {
   const fromUrl = new URLSearchParams(window.location.search).get('v')
+  if (fromUrl === 'tv' || fromUrl === 'smarttv') return 'tv'
   if (fromUrl === 'ai' || fromUrl === '2027ai') return 'ai'
   if (fromUrl === '2027') return 'v2027'
   if (fromUrl === 'baseline' || fromUrl === 'old') return 'baseline'
@@ -26,7 +28,15 @@ export default function App() {
 
   return (
     <>
-      {skin === 'ai' ? <Home3 /> : skin === 'v2027' ? <Home2027 /> : <BaselineHome />}
+      {skin === 'tv' ? (
+        <TvHome />
+      ) : skin === 'ai' ? (
+        <Home3 />
+      ) : skin === 'v2027' ? (
+        <Home2027 />
+      ) : (
+        <BaselineHome />
+      )}
       <SkinSwitch skin={skin} onChange={setSkin} />
     </>
   )
@@ -42,6 +52,7 @@ function SkinSwitch({ skin, onChange }: { skin: Skin; onChange: (skin: Skin) => 
           ['baseline', 'Acum'],
           ['v2027', '2027'],
           ['ai', '2027 AI'],
+          ['tv', 'TV'],
         ] as const
       ).map(([value, label]) => (
         <button

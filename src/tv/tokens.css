@@ -1,0 +1,68 @@
+/* ── AntenaPLAY · Smart TV ─────────────────────────────────────────────────
+   Same palette and content as the other skins, laid out for a screen you sit
+   three metres from and drive with a remote.
+
+   The whole surface is authored at 1280×720 and scaled to the window, which is
+   how a TV app is actually built: the layout is fixed, only the scale changes
+   between a 720p panel and a 4K one. Sizes below are therefore literal design
+   pixels, not responsive guesses.                                           */
+
+@theme {
+  --color-tv-ground: #07070a;
+  --color-tv-panel: #101016;
+  --color-tv-raised: #191921;
+  --color-tv-line: rgba(255, 255, 255, 0.1);
+
+  --color-tv-fg: #ffffff;
+  --color-tv-dim: #b4b4c0;
+  --color-tv-faint: #83838f;
+
+  --color-tv-action: #ea1d25;
+  --color-tv-ai: #a06bff;
+
+  /* Broadcast-safe margin. Panels overscan, so nothing that must be readable
+     sits in the outer 5%. */
+  --tv-safe: 48px;
+}
+
+@layer base {
+  .tv {
+    background-color: var(--color-tv-ground);
+    color: var(--color-tv-fg);
+    font-family: var(--font-display);
+  }
+}
+
+/* Focus is the only state a TV has, so it is loud on purpose: a ring the width
+   of a remote press, a lift, and a brightened card. Anything subtle enough to
+   miss from the sofa is a bug. */
+@utility tv-focus {
+  outline: 4px solid var(--color-tv-fg);
+  outline-offset: 4px;
+  box-shadow:
+    0 0 0 8px rgba(0, 0, 0, 0.55),
+    0 26px 60px -18px rgba(0, 0, 0, 0.9);
+}
+
+@utility tv-focus-ai {
+  outline: 4px solid var(--color-tv-ai);
+  outline-offset: 4px;
+  box-shadow: 0 0 44px rgba(160, 107, 255, 0.5);
+}
+
+@utility tv-no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tv *,
+  .tv *::before,
+  .tv *::after {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+  }
+}

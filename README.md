@@ -113,16 +113,50 @@ node scripts/figma-mcp.mjs get_design_context \
 Writing to a file keeps the large responses out of the conversation; parse them
 locally.
 
-## Three skins on one content model
+## Four skins on one content model
 
-The app ships three visual languages over the same data, switchable bottom-right
-(or by URL), so a pitch can walk the same content through all of them:
+The app ships four surfaces over the same data, switchable bottom-right (or by
+URL), so a pitch can walk the same content through all of them:
 
 - `?v=baseline` — the page as it is today, the faithful Figma rebuild above.
 - `?v=2027` — the 2027 visual direction, in `src/v2027/`.
 - `?v=ai` (default) — 2027 · AI, in `src/v3ai/`: the same palette and content,
   restructured around natural-language search.
+- `?v=tv` — the Smart TV screen, in `src/tv/`. Drive it with the arrow keys.
 - `?theme=light` — the 2027 skin's light theme (also on the header toggle).
+
+## Smart TV
+
+Not the web page made bigger. Every decision on this screen comes from the fact
+that a TV has no pointer — there is a focus and four directions:
+
+- **Focus replaces hover.** Everything the web skins reveal on hover lives in
+  the focused state, and only for the focused card. The ring is deliberately
+  loud: anything you could miss from the sofa is a bug.
+- **The backdrop follows focus.** Moving across a row repaints the whole screen
+  and the title block, so the detail you would otherwise open a page for is
+  already in front of you. On a device where every press costs, that is the
+  cheapest press you can remove.
+- **One row, plus the top of the next.** A remote scrolls a row at a time, so a
+  screen crammed with rows is a screen you cannot reach the bottom of.
+- **Each row remembers its column.** Going down and back up returns you where
+  you were; without it, browsing feels like being reset.
+- **Search has its own screen and no keyboard.** Nobody types a sentence with a
+  D-pad, which is exactly why the assistant earns its keep here more than on the
+  web. You press the microphone or pick a phrase. The microphone uses the
+  browser's own speech recognition where it exists and falls back to an example
+  phrase where it does not — saying so on screen rather than pretending it
+  heard something.
+
+The layout is authored once at 1280×720 and scaled to the window, which is how a
+TV app is actually built: a 4K panel runs the same layout at a different scale.
+So every size in `src/tv` is a real design pixel, the 5% safe area is real, and
+"nothing smaller than 18px, nothing that matters under 20px" is a claim that can
+be measured rather than hoped for.
+
+`useTvNav` owns the remote, and only one surface holds it at a time — the home
+screen stops listening while the search overlay is open, or a single press lands
+in two places.
 - `?feed=off` — turns off colour feeding, if the wash is not wanted in the room.
 
 Section inventory and content are unchanged between the two. The information
