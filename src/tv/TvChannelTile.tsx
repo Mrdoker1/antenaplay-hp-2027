@@ -66,7 +66,7 @@ export function TvChannelTile({
             alt={channel.name}
             loading="lazy"
             decoding="async"
-            className={`absolute right-[14px] top-[14px] size-[62px] rounded-[12px] bg-black/45 object-contain p-[9px] transition-opacity duration-200 ${
+            className={`absolute right-[14px] top-[14px] size-[66px] rounded-[14px] bg-black/45 object-contain p-[14px] transition-opacity duration-200 ${
               focused ? 'opacity-100' : 'opacity-80'
             }`}
           />
