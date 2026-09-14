@@ -15,7 +15,7 @@ import { TvSearch } from './TvSearch'
 import { MENU } from './menu'
 import { TvSideMenu } from './TvSideMenu'
 import { TvStage } from './TvStage'
-import { useTvNav } from './useTvNav'
+import { usePointerAsRemote, useTvNav } from './useTvNav'
 
 /** The section pages, on the same set AntenaPLAY's own TV app offers. Each
  *  filter narrows by something the catalogue actually knows — a label that
@@ -131,14 +131,29 @@ export default function TvHome() {
     }
   }, [])
 
+  /* Choosing a menu entry, from the remote or from a click. */
+  const pickMenu = useCallback((i: number) => {
+    const picked = MENU[i]
+    if (!picked) return
+    setMenuIndex(null)
+    setFranchise(null)
+    if (picked.key === 'search') setSearchOpen(true)
+    else setSection(picked.key)
+  }, [])
+
   const sectionScreen = SECTIONS[section]
   const liveScreen = section === 'live'
   const overlay = menuOpen || searchOpen || Boolean(franchise)
   const homeActive = !overlay && !sectionScreen && !liveScreen
 
-  const { focus } = useTvNav(lengths, onEnter, homeActive, (dir) => {
+  const { focus, setFocus } = useTvNav(lengths, onEnter, homeActive, (dir) => {
     if (dir === 'left') setMenuIndex(MENU.findIndex((m) => m.key === section))
   })
+  const openMenu = useCallback(
+    () => setMenuIndex(MENU.findIndex((m) => m.key === section)),
+    [section],
+  )
+  const onPointer = usePointerAsRemote(setFocus, onEnter, homeActive, openMenu)
 
   /* The menu owns the remote while it is open, and Left from the first column
      is how you hand it over. */
@@ -165,20 +180,15 @@ export default function TvHome() {
         case 'Backspace':
           setMenuIndex(null)
           break
-        case 'Enter': {
-          const picked = MENU[menuIndex]
-          setMenuIndex(null)
-          setFranchise(null)
-          if (picked.key === 'search') setSearchOpen(true)
-          else setSection(picked.key)
+        case 'Enter':
+          pickMenu(menuIndex)
           break
-        }
         default:
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [menuOpen, menuIndex, searchOpen, franchise])
+  }, [menuOpen, menuIndex, searchOpen, franchise, pickMenu])
 
   const rail = focus.row > 0 ? RAILS[focus.row - 1] : null
   /* A channel is not a title: standing on one, the hero has to say which channel
@@ -222,16 +232,19 @@ export default function TvHome() {
   return (
     <TvStage>
       {/* the menu dims the rest rather than replacing it, so you keep your
-          place — and it is present on every screen, not just the home one */}
+          place — and it is present on every screen, not just the home one.
+          Clicking the dimmed part is the Right press that closes it. */}
       <div
+        onClick={() => setMenuIndex(null)}
         className={`absolute inset-0 z-30 bg-black/55 transition-opacity duration-300 ${
           menuOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
         }`}
       />
-      <TvSideMenu open={menuOpen} index={menuIndex ?? 0} active={section} />
+      <TvSideMenu open={menuOpen} index={menuIndex ?? 0} active={section} onPick={pickMenu} />
 
       {!sectionScreen && !liveScreen && (
-        <>
+        /* `display: contents` so the click delegation costs the layout nothing */
+        <div className="contents" onClick={onPointer}>
         {/* The backdrop is card artwork — 537px wide at best — so stretching it
             across 1280 is what made it look soft. It now occupies the right 62%,
             which is roughly its native size, and dissolves into the page with a
@@ -314,7 +327,13 @@ export default function TvHome() {
             top: 48,
           }}
         >
-          <div className="max-w-[620px]">
+          {/* Two lines of room for the title whether it needs them or not:
+              unclamped, a one-line title pulls the metadata and the buttons up
+              and the whole block jumps as focus moves along a rail. The
+              eyebrow and the title sit at the bottom of that room together, so
+              the slack falls into empty space above them rather than opening a
+              hole between the title and what it belongs to. */}
+          <div className="flex min-h-[180px] max-w-[620px] flex-col justify-end">
             <p className="font-meta text-[19px]/[26px] uppercase tracking-[0.16em] text-tv-dim">
               {rail ? rail.title : 'AntenaPLAY'}
             </p>
@@ -337,7 +356,8 @@ export default function TvHome() {
               wrapped to two and pushed them down behind the rails. */}
           <div className="mt-[18px] flex items-center gap-[22px]">
             <span
-              className={`flex items-center gap-[10px] rounded-full bg-tv-action px-[22px] py-[10px] text-[21px]/[26px] font-bold transition-transform duration-200 ${
+              data-tv="0,0"
+              className={`flex cursor-pointer items-center gap-[10px] rounded-full bg-tv-action px-[22px] py-[10px] text-[21px]/[26px] font-bold transition-transform duration-200 ${
                 focus.row === 0 && focus.col === 0 ? 'tv-focus scale-[1.04]' : ''
               }`}
             >
@@ -345,7 +365,8 @@ export default function TvHome() {
               {channel ? 'Intră' : 'Redă'}
             </span>
             <span
-              className={`flex items-center gap-[10px] rounded-full bg-white/12 px-[22px] py-[10px] text-[21px]/[26px] font-semibold transition-transform duration-200 ${
+              data-tv="0,1"
+              className={`flex cursor-pointer items-center gap-[10px] rounded-full bg-white/12 px-[22px] py-[10px] text-[21px]/[26px] font-semibold transition-transform duration-200 ${
                 focus.row === 0 && focus.col === 1 ? 'tv-focus-ai scale-[1.04]' : ''
               }`}
             >
@@ -412,6 +433,7 @@ export default function TvHome() {
                         key={`${c.name}-${colIndex}`}
                         channel={c}
                         focused={focus.row === rowIndex + 1 && focus.col === colIndex}
+                        cell={`${rowIndex + 1},${colIndex}`}
                       />
                     ))}
                   </div>
@@ -429,7 +451,7 @@ export default function TvHome() {
             )}
           </div>
         </div>
-        </>
+        </div>
       )}
 
       {sectionScreen && (

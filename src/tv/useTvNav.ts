@@ -87,6 +87,42 @@ export function useTvNav(
   return { focus, setFocus, move }
 }
 
+/** A pointer, used as a remote.
+ *
+ *  A TV has none, and the design does not want one — but this is shown on a
+ *  laptop, where a click that does nothing reads as a broken screen rather than
+ *  as a deliberate absence. So a click is treated as the two presses it stands
+ *  for: move focus here, then OK. Nothing about the focus model changes; the
+ *  mouse just becomes another way to drive it.
+ *
+ *  Attach the returned handler to a `display: contents` wrapper so it catches
+ *  clicks by delegation without touching the layout, and mark each focusable
+ *  element with `data-tv="row,col"`. A click that lands on nothing focusable is
+ *  the remote's Back, so a mouse can also leave a screen it has entered. */
+export function usePointerAsRemote(
+  setFocus: (f: TvFocus) => void,
+  onEnter?: (f: TvFocus) => void,
+  enabled = true,
+  onBack?: () => void,
+) {
+  return useCallback(
+    (e: React.MouseEvent) => {
+      if (!enabled) return
+      const cell = (e.target as HTMLElement).closest?.('[data-tv]')
+      const coords = cell?.getAttribute('data-tv')
+      if (!coords) {
+        onBack?.()
+        return
+      }
+      const [row, col] = coords.split(',').map(Number)
+      if (Number.isNaN(row) || Number.isNaN(col)) return
+      setFocus({ row, col })
+      onEnter?.({ row, col })
+    },
+    [setFocus, onEnter, enabled, onBack],
+  )
+}
+
 /** Keeps the focused element in view. Called by whatever is focused, since on a
  *  remote the two cannot be separated. */
 export function useScrollIntoFocus(active: boolean, node: HTMLElement | null) {

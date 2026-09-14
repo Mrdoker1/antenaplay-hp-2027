@@ -46,6 +46,7 @@ export function TvRail({
               item={item}
               rank={colIndex + 1}
               focused={active && focus.col === colIndex}
+              cell={`${rowIndex},${colIndex}`}
             />
           ) : (
             <TvCard
@@ -53,6 +54,7 @@ export function TvRail({
               item={item}
               width={168}
               focused={active && focus.col === colIndex}
+              cell={`${rowIndex},${colIndex}`}
             />
           ),
         )}
@@ -61,7 +63,17 @@ export function TvRail({
   )
 }
 
-function Ranked({ item, rank, focused }: { item: Item; rank: number; focused: boolean }) {
+function Ranked({
+  item,
+  rank,
+  focused,
+  cell,
+}: {
+  item: Item
+  rank: number
+  focused: boolean
+  cell?: string
+}) {
   const { a1, a2 } = accentFromTitle(item.title || String(rank))
 
   return (
@@ -78,7 +90,7 @@ function Ranked({ item, rank, focused }: { item: Item; rank: number; focused: bo
         {rank}
       </span>
       <div className="relative z-10">
-        <TvCard item={item} width={148} focused={focused} lockup />
+        <TvCard item={item} width={148} focused={focused} lockup cell={cell} />
       </div>
     </div>
   )

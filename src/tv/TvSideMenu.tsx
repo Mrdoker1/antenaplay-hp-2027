@@ -19,10 +19,13 @@ export function TvSideMenu({
   open,
   index,
   active,
+  onPick,
 }: {
   open: boolean
   index: number
   active: string
+  /** clicking an entry is the same as landing on it and pressing OK */
+  onPick?: (i: number) => void
 }) {
   return (
     <nav
@@ -47,7 +50,8 @@ export function TvSideMenu({
         return (
           <div
             key={key}
-            className={`relative mx-[10px] flex items-center gap-[18px] rounded-[12px] px-[14px] py-[14px] transition-colors ${
+            onClick={() => onPick?.(i)}
+            className={`relative mx-[10px] flex cursor-pointer items-center gap-[18px] rounded-[12px] px-[14px] py-[14px] transition-colors ${
               focused ? 'tv-focus bg-white/10' : ''
             }`}
           >

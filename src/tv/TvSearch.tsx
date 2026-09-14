@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { asset } from '../lib/assets'
 import { IconSparkle } from '../v3ai/icons'
 import { countMatches, search, stats, SUGGESTIONS, type Hit } from '../v3ai/search'
-import { useTvNav } from './useTvNav'
+import { usePointerAsRemote, useTvNav } from './useTvNav'
 
 type Recognition = {
   lang: string
@@ -92,7 +92,8 @@ export function TvSearch({ onClose }: { onClose: () => void }) {
     [ask, listen],
   )
 
-  const { focus } = useTvNav(rows, onEnter)
+  const { focus, setFocus } = useTvNav(rows, onEnter)
+  const onPointer = usePointerAsRemote(setFocus, onEnter, true, onClose)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -103,7 +104,7 @@ export function TvSearch({ onClose }: { onClose: () => void }) {
   }, [onClose])
 
   return (
-    <div className="absolute inset-0 z-50 bg-tv-ground">
+    <div className="absolute inset-0 z-50 bg-tv-ground" onClick={onPointer}>
       <div
         className="pointer-events-none absolute inset-0"
         style={{
@@ -140,14 +141,14 @@ export function TvSearch({ onClose }: { onClose: () => void }) {
         {/* padding, not margin: overflow clips at the padding box, so this is
             what keeps a focused pill's ring from being cut */}
         <div className="tv-no-scrollbar -mx-[16px] -my-[14px] mt-[12px] flex items-center gap-[20px] overflow-x-auto px-[16px] py-[14px]">
-          <Pill focused={focus.row === 0 && focus.col === 0} tone="ai">
+          <Pill focused={focus.row === 0 && focus.col === 0} tone="ai" cell="0,0">
             <span className="flex items-center gap-[12px]">
               <Microphone className="size-[26px]" />
               {listening ? 'Ascult…' : 'Vorbește'}
             </span>
           </Pill>
           {SUGGESTIONS.map((phrase, i) => (
-            <Pill key={phrase} focused={focus.row === 0 && focus.col === i + 1}>
+            <Pill key={phrase} focused={focus.row === 0 && focus.col === i + 1} cell={`0,${i + 1}`}>
               <span className="first-letter:uppercase">{phrase}</span>
             </Pill>
           ))}
@@ -157,7 +158,7 @@ export function TvSearch({ onClose }: { onClose: () => void }) {
           {hits.length ? (
             <div className="tv-no-scrollbar -mx-[16px] flex gap-[18px] overflow-x-auto px-[16px] py-[16px]">
               {hits.map((hit, i) => (
-                <Result key={hit.title} hit={hit} focused={focus.row === 1 && focus.col === i} />
+                <Result key={hit.title} hit={hit} focused={focus.row === 1 && focus.col === i} cell={`1,${i}`} />
               ))}
             </div>
           ) : (
@@ -182,10 +183,12 @@ function Pill({
   children,
   focused,
   tone,
+  cell,
 }: {
   children: React.ReactNode
   focused: boolean
   tone?: 'ai'
+  cell?: string
 }) {
   const ref = useRef<HTMLSpanElement>(null)
 
@@ -196,7 +199,8 @@ function Pill({
   return (
     <span
       ref={ref}
-      className={`tv-scroll-gap shrink-0 whitespace-nowrap rounded-full px-[22px] py-[11px] text-[22px]/[28px] font-semibold transition-transform duration-200 ${
+      data-tv={cell}
+      className={`tv-scroll-gap shrink-0 cursor-pointer whitespace-nowrap rounded-full px-[22px] py-[11px] text-[22px]/[28px] font-semibold transition-transform duration-200 ${
         tone === 'ai' ? 'bg-tv-ai/20 text-tv-fg' : 'bg-white/10 text-tv-fg'
       } ${focused ? (tone === 'ai' ? 'tv-focus-ai scale-[1.05]' : 'tv-focus scale-[1.05]') : ''}`}
     >
@@ -205,7 +209,7 @@ function Pill({
   )
 }
 
-function Result({ hit, focused }: { hit: Hit; focused: boolean }) {
+function Result({ hit, focused, cell }: { hit: Hit; focused: boolean; cell?: string }) {
   const ref = useRef<HTMLDivElement>(null)
   const art = asset(hit.art)
 
@@ -214,7 +218,7 @@ function Result({ hit, focused }: { hit: Hit; focused: boolean }) {
   }, [focused])
 
   return (
-    <div ref={ref} className="tv-scroll-gap w-[268px] shrink-0">
+    <div ref={ref} data-tv={cell} className="tv-scroll-gap w-[268px] shrink-0 cursor-pointer">
       <div
         className={`relative aspect-video overflow-hidden rounded-[10px] bg-tv-raised transition-transform duration-200 ${
           focused ? 'tv-focus scale-[1.05]' : ''

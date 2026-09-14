@@ -23,10 +23,13 @@ export function TvChannelTile({
   channel,
   focused,
   width = 232,
+  cell,
 }: {
   channel: ChannelItem
   focused: boolean
   width?: number
+  /** "row,col" — lets a click stand in for moving here and pressing OK */
+  cell?: string
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const logo = asset(channel.logo)
@@ -37,7 +40,12 @@ export function TvChannelTile({
   }, [focused])
 
   return (
-    <div ref={ref} className="tv-scroll-gap-row shrink-0" style={{ width }}>
+    <div
+      ref={ref}
+      data-tv={cell}
+      className={`tv-scroll-gap-row shrink-0 ${cell ? 'cursor-pointer' : ''}`}
+      style={{ width }}
+    >
       <div
         className={`relative aspect-video overflow-hidden rounded-[14px] transition-transform duration-200 ${
           focused ? 'tv-focus scale-[1.06]' : ''

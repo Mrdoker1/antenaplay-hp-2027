@@ -4,7 +4,7 @@ import { liveEvents } from '../data/liveEvents'
 import { asset } from '../lib/assets'
 import { PlayGlyph } from '../v2027/PlayGlyph'
 import { TvChannelTile } from './TvChannelTile'
-import { useTvNav } from './useTvNav'
+import { usePointerAsRemote, useTvNav } from './useTvNav'
 
 /** What is on right now.
  *
@@ -29,9 +29,10 @@ export function TvLiveScreen({ active, onOpenMenu }: { active: boolean; onOpenMe
   const channels = useMemo(() => channelsTv.filter((c) => c.logo).slice(0, 10), [])
   const lengths = useMemo(() => [channels.length, liveEvents.length], [channels.length])
 
-  const { focus } = useTvNav(lengths, undefined, active, (dir) => {
+  const { focus, setFocus } = useTvNav(lengths, undefined, active, (dir) => {
     if (dir === 'left') onOpenMenu()
   })
+  const onPointer = usePointerAsRemote(setFocus, undefined, active, onOpenMenu)
 
   const channel = channels[focus.row === 0 ? focus.col : 0]
   const now = NOW[(focus.row === 0 ? focus.col : 0) % NOW.length]
@@ -39,6 +40,7 @@ export function TvLiveScreen({ active, onOpenMenu }: { active: boolean; onOpenMe
 
   return (
     <div
+      onClick={onPointer}
       className="absolute inset-0 z-20 flex flex-col bg-tv-ground"
       style={{
         paddingLeft: 'calc(var(--tv-rail) + var(--tv-safe) - 26px)',
@@ -99,7 +101,7 @@ export function TvLiveScreen({ active, onOpenMenu }: { active: boolean; onOpenMe
               const focused = focus.row === 0 && focus.col === i
               return (
                 <div key={c.name} className="shrink-0">
-                  <TvChannelTile channel={c} focused={focused} width={232} />
+                  <TvChannelTile channel={c} focused={focused} width={232} cell={`0,${i}`} />
                   {/* the two things only a broadcaster can offer, on the channel
                       you are standing on */}
                   {/* clear of the focus ring: outline 4 + offset 4 + the 8px
@@ -134,7 +136,11 @@ export function TvLiveScreen({ active, onOpenMenu }: { active: boolean; onOpenMe
               const focused = focus.row === 1 && focus.col === i
               const still = asset(e.still)
               return (
-                <div key={`${e.title}-${i}`} className="tv-scroll-gap w-[248px] shrink-0">
+                <div
+                  key={`${e.title}-${i}`}
+                  data-tv={`1,${i}`}
+                  className="tv-scroll-gap w-[248px] shrink-0 cursor-pointer"
+                >
                   <div
                     className={`relative aspect-video overflow-hidden rounded-[12px] bg-tv-raised transition-transform duration-200 ${
                       focused ? 'tv-focus scale-[1.05]' : ''

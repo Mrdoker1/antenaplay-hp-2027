@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { asset } from '../lib/assets'
 import { titleCount, type Franchise } from '../lib/franchise'
 import { TvCard } from './TvCard'
-import { useTvNav } from './useTvNav'
+import { usePointerAsRemote, useTvNav } from './useTvNav'
 
 /** A franchise hub.
  *
@@ -24,15 +24,16 @@ export function TvFranchiseScreen({
   const art = asset(franchise.art)
   const lengths = useMemo(() => franchise.groups.map((g) => g.items.length), [franchise])
 
-  const { focus } = useTvNav(lengths, undefined, active, (dir) => {
+  const { focus, setFocus } = useTvNav(lengths, undefined, active, (dir) => {
     if (dir === 'left') onClose()
   })
+  const onPointer = usePointerAsRemote(setFocus, undefined, active, onClose)
 
   const group = franchise.groups[focus.row]
   const item = group?.items[focus.col]
 
   return (
-    <div className="absolute inset-0 z-20 bg-tv-ground">
+    <div className="absolute inset-0 z-20 bg-tv-ground" onClick={onPointer}>
       {art && (
         <div className="absolute inset-y-0 right-0 w-[58%] overflow-hidden">
           <img
@@ -106,6 +107,7 @@ export function TvFranchiseScreen({
                     item={it}
                     width={158}
                     focused={focus.row === rowIndex && focus.col === colIndex}
+                    cell={`${rowIndex},${colIndex}`}
                   />
                 ))}
               </div>

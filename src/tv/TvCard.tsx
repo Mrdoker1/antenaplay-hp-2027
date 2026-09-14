@@ -16,12 +16,15 @@ export function TvCard({
   focused,
   width = 148,
   lockup = false,
+  cell,
 }: {
   item: Item
   focused: boolean
   width?: number
   /** show the title lockup on the artwork, as the Top 10 rail does */
   lockup?: boolean
+  /** "row,col" — lets a click stand in for moving here and pressing OK */
+  cell?: string
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const key = item.cover === PLACEHOLDER ? null : item.cover
@@ -35,7 +38,12 @@ export function TvCard({
   const lockupArt = lockup ? asset(item.logo) : null
 
   return (
-    <div ref={ref} className="tv-scroll-gap-row shrink-0" style={{ width }}>
+    <div
+      ref={ref}
+      data-tv={cell}
+      className={`tv-scroll-gap-row shrink-0 ${cell ? 'cursor-pointer' : ''}`}
+      style={{ width }}
+    >
       <div
         className={`relative aspect-2/3 overflow-hidden rounded-[14px] bg-tv-raised transition-transform duration-200 ${
           focused ? 'tv-focus scale-[1.08]' : ''

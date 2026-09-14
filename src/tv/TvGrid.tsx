@@ -15,10 +15,13 @@ export function TvGridCard({
   item,
   focused,
   width = 168,
+  cell,
 }: {
   item: Item
   focused: boolean
   width?: number
+  /** "row,col" — lets a click stand in for moving here and pressing OK */
+  cell?: string
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const key = item.cover === PLACEHOLDER ? null : item.cover
@@ -30,7 +33,12 @@ export function TvGridCard({
   }, [focused])
 
   return (
-    <div ref={ref} className="tv-scroll-gap shrink-0" style={{ width }}>
+    <div
+      ref={ref}
+      data-tv={cell}
+      className={`tv-scroll-gap shrink-0${cell ? ' cursor-pointer' : ''}`}
+      style={{ width }}
+    >
       <div
         className={`relative aspect-2/3 overflow-hidden rounded-[12px] bg-tv-raised transition-transform duration-200 ${
           focused ? 'tv-focus scale-[1.05]' : ''

@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import type { Item } from '../v2027/catalog'
 import { TvGridCard } from './TvGrid'
-import { useTvNav } from './useTvNav'
+import { usePointerAsRemote, useTvNav } from './useTvNav'
 
 export type Filter = { label: string; items: Item[] }
 
@@ -38,23 +38,27 @@ export function TvSectionScreen({
     [filters.length, grid],
   )
 
-  const { focus } = useTvNav(
+  const pick = useCallback(({ row, col }: { row: number; col: number }) => {
+    // focus is already on the chip that was pressed; only the selection moves
+    if (row === 0) setFilter(col)
+  }, [])
+
+  const { focus, setFocus } = useTvNav(
     lengths,
-    ({ row, col }) => {
-      // focus is already on the chip that was pressed; only the selection moves
-      if (row === 0) setFilter(col)
-    },
+    pick,
     active,
     (dir) => {
       if (dir === 'left') onOpenMenu()
     },
   )
+  const onPointer = usePointerAsRemote(setFocus, pick, active, onOpenMenu)
 
   /* The section name and the filters stay put; only the grid moves. Scrolled
      away, they take with them the two things you need most on a page you are
      scanning: where you are, and how to narrow it. */
   return (
     <div
+      onClick={onPointer}
       className="absolute inset-0 z-20 flex flex-col bg-tv-ground"
       style={{
         paddingLeft: 'calc(var(--tv-rail) + var(--tv-safe) - 26px)',
@@ -74,7 +78,8 @@ export function TvSectionScreen({
             {filters.map((f, i) => (
               <span
                 key={f.label}
-                className={`tv-scroll-gap shrink-0 whitespace-nowrap rounded-full px-[20px] py-[9px] text-[21px]/[28px] font-semibold transition-transform duration-200 ${
+                data-tv={`0,${i}`}
+                className={`tv-scroll-gap shrink-0 cursor-pointer whitespace-nowrap rounded-full px-[20px] py-[9px] text-[21px]/[28px] font-semibold transition-transform duration-200 ${
                   filter === i ? 'bg-tv-action text-white' : 'bg-white/10 text-tv-dim'
                 } ${focus.row === 0 && focus.col === i ? 'tv-focus scale-[1.05]' : ''}`}
               >
@@ -94,6 +99,7 @@ export function TvSectionScreen({
                   key={`${item.title}-${colIndex}`}
                   item={item}
                   focused={focus.row === rowIndex + 1 && focus.col === colIndex}
+                  cell={`${rowIndex + 1},${colIndex}`}
                 />
               ))}
             </div>
