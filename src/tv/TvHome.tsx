@@ -353,9 +353,12 @@ export default function TvHome() {
               Caută cu vocea
             </span>
 
+            {/* No fill and no pill: beside two buttons a filled capsule reads
+                as a third one, and this is a caption, not a control. What it
+                says is what the OK key does on the card below. */}
             {universe && (
-              <p className="flex items-center gap-[9px] whitespace-nowrap rounded-full bg-white/10 py-[5px] pe-[15px] ps-[6px] font-meta text-[17px]/[22px] uppercase tracking-[0.1em] text-tv-fg/85">
-                <span className="rounded-full bg-tv-fg px-[9px] py-[1px] text-[15px]/[20px] font-bold text-tv-ground">
+              <p className="flex items-center gap-[9px] whitespace-nowrap ps-[4px] font-meta text-[17px]/[22px] uppercase tracking-[0.1em] text-tv-dim [text-shadow:0_1px_8px_rgba(0,0,0,0.95)]">
+                <span className="rounded-[6px] border border-tv-fg/45 bg-black/35 px-[8px] py-[1px] text-[15px]/[20px] font-bold text-tv-fg/85">
                   OK
                 </span>
                 {titleCount(universe.total)} în univers
@@ -371,22 +374,26 @@ export default function TvHome() {
         {/* The logo used to sit above the hero; without it the whole column
             starts higher, and the rails take the room that frees. */}
         <div className="absolute inset-x-0 bottom-0" style={{ height: 396 }}>
-          {/* The row above the focused one is sliced by the scrollport, and the
-              slice — a strip of card bottoms and their progress bars — lands
-              right under the hero's buttons. Measured: the slice ends 37px in
-              and the next heading starts at 67, so the cover stays solid to 40
-              and is gone before the heading. */}
-          <div
-            className={`pointer-events-none absolute inset-x-0 top-0 z-10 h-[62px] bg-[linear-gradient(to_bottom,var(--color-tv-ground)_0%,var(--color-tv-ground)_64%,transparent_100%)] transition-opacity duration-200 ${
-              scrolled ? 'opacity-100' : 'opacity-0'
-            }`}
-          />
+
           <div
             className="tv-no-scrollbar h-full overflow-y-auto py-[30px]"
             onScroll={(e) => setScrolled(e.currentTarget.scrollTop > 4)}
             style={{
               paddingLeft: 'calc(var(--tv-rail) + var(--tv-safe) - 26px)',
               paddingRight: 'calc(var(--tv-safe) - 26px)',
+              /* The row above the focused one is sliced by the scrollport, and
+                 the slice — card bottoms and their progress bars — lands right
+                 under the hero's buttons. Hiding it has to be a mask on the
+                 list, not a panel painted over it: a panel is opaque ground and
+                 draws a black band across the artwork behind. Measured: the
+                 slice ends 38px in, the next heading starts at 67. */
+              ...(scrolled
+                ? {
+                    maskImage: 'linear-gradient(to bottom, transparent 0px, transparent 38px, #000 62px)',
+                    WebkitMaskImage:
+                      'linear-gradient(to bottom, transparent 0px, transparent 38px, #000 62px)',
+                  }
+                : null),
             }}
           >
             {RAILS.map((r, rowIndex) =>

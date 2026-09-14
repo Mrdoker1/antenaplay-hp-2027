@@ -51,16 +51,15 @@ export function TvLiveScreen({ active, onOpenMenu }: { active: boolean; onOpenMe
         </h1>
 
         {/* What is on, on the channel you are standing on.
-            The marks are cropped to their ink (scripts/trim-channel-logos),
-            so the box is driven by height with the width left to follow: the
-            mark is as large as the line allows and there is nothing padding
-            it out to one side. */}
+            No plate here — but a fixed box, because the marks are all different
+            shapes and a box that fits each one moves the programme name every
+            time focus changes. */}
         <div className="mt-[18px] flex items-center gap-[22px]">
           {logo && (
             <img
               src={logo}
               alt=""
-              className="h-[62px] w-auto max-w-[190px] shrink-0 object-contain drop-shadow-[0_2px_12px_rgba(0,0,0,0.75)]"
+              className="h-[62px] w-[150px] shrink-0 object-contain drop-shadow-[0_2px_12px_rgba(0,0,0,0.75)]"
             />
           )}
           <div className="min-w-0 flex-1">
